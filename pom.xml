@@ -7,6 +7,14 @@
 	<name>Topographica</name>
 	<description>Easy to use live map for Minecraft</description>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- For propagating timestamp to configuration file -->
+		<timestamp>${maven.build.timestamp}</timestamp>
+   		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+	</properties>
+
 	<repositories>
 		<repository>
 			<id>spigot-repo</id>
