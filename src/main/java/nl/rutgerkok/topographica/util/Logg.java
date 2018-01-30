@@ -18,6 +18,11 @@ public class Logg {
         this.logger = logger;
     }
 
+    public void severe(String message) {
+        messages.add(message);
+        logger.severe(message);
+    }
+
     public void warn(String message) {
         messages.add(message);
         logger.warning(message);

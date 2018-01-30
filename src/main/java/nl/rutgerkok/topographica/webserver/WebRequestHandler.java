@@ -1,4 +1,4 @@
-package nl.rutgerkok.topographica;
+package nl.rutgerkok.topographica.webserver;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 
@@ -9,7 +9,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
-public class WebRequestHandler {
+final class WebRequestHandler {
 
     public FullHttpResponse respond(FullHttpRequest request) {
         final String responseMessage = "Hello from Netty!";

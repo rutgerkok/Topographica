@@ -1,6 +1,8 @@
-package nl.rutgerkok.topographica;
+package nl.rutgerkok.topographica.webserver;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
+
+import java.net.BindException;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -22,6 +24,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
+import nl.rutgerkok.topographica.config.WebConfig;
+import nl.rutgerkok.topographica.util.Logg;
 
 final class Webserver {
 
@@ -41,12 +45,14 @@ final class Webserver {
         masterGroup.shutdownGracefully();
 
         try {
-            channel.channel().closeFuture().sync();
+            if (channel != null) {
+                channel.channel().closeFuture().sync();
+            }
         } catch (InterruptedException e) {
         }
     }
 
-    public void enable() {
+    public void enable(WebConfig config, Logg log) {
 
         try {
             final ServerBootstrap bootstrap = new ServerBootstrap()
@@ -98,8 +104,15 @@ final class Webserver {
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
-            channel = bootstrap.bind(8080).sync();
-        } catch (final InterruptedException e) {
+            channel = bootstrap.bind(config.getPort()).sync();
+        } catch (InterruptedException e) {
+        } catch (Exception e) {
+            if (e instanceof BindException) {
+                log.severe("**** FAILED TO BIND TO PORT **** \nPort " + config.getPort()
+                        + " is already in use. The map will not function.");
+                return;
+            }
+            throw e;
         }
     }
 

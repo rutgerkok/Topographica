@@ -33,6 +33,14 @@ public final class Config {
         return result;
     }
 
+    /**
+     * Gets the configuration for the web server.
+     * @return The configuration.
+     */
+    public WebConfig getWebConfig() {
+        return webConfig;
+    }
+
     private Map<String, WorldConfig> getWorldConfigs(Server server, FileConfiguration config, Logg log) {
         Map<String, WorldConfig> configsByWorld = new HashMap<>();
 

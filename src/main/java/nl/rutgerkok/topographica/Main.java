@@ -16,6 +16,7 @@ import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.render.RawImage;
 import nl.rutgerkok.topographica.render.RegionRenderer;
 import nl.rutgerkok.topographica.util.Logg;
+import nl.rutgerkok.topographica.webserver.Webserver;
 
 public class Main extends JavaPlugin {
 
@@ -84,7 +85,7 @@ public class Main extends JavaPlugin {
         config.write(getConfig());
         saveConfig();
 
-        webserver.enable();
+        webserver.enable(config.getWebConfig(), log);
         getDataFolder().mkdirs();
     }
 
