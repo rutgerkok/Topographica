@@ -12,8 +12,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.render.RawImage;
 import nl.rutgerkok.topographica.render.RegionRenderer;
+import nl.rutgerkok.topographica.util.Logg;
 
 public class Main extends JavaPlugin {
 
@@ -25,9 +27,12 @@ public class Main extends JavaPlugin {
             getServer().getScheduler().runTaskAsynchronously(Main.this, command);
         }
     };
+    private Logg log;
+    private Config config;
 
     public Main() {
         webserver = new Webserver();
+
     }
 
     private World getWorld(CommandSender sender) {
@@ -72,6 +77,13 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        log = new Logg(getLogger());
+        
+        saveDefaultConfig();
+        config = new Config(getServer(), getConfig(), log);
+        config.write(getConfig());
+        saveConfig();
+
         webserver.enable();
         getDataFolder().mkdirs();
     }

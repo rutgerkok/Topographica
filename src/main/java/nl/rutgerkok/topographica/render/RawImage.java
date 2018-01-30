@@ -1,5 +1,10 @@
 package nl.rutgerkok.topographica.render;
 
+import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS_BITS;
+import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS;
+import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_PIXELS;
+import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_PIXELS_BITS;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.IOException;

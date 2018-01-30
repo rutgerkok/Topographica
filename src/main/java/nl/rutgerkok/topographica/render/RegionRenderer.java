@@ -1,5 +1,8 @@
 package nl.rutgerkok.topographica.render;
 
+import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_CHUNKS;
+import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_CHUNKS_BITS;
+
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -83,10 +86,10 @@ public final class RegionRenderer {
 
         private boolean next() {
             chunkXInRegion++;
-            if (chunkXInRegion >= Canvas.REGION_SIZE_CHUNKS) {
+            if (chunkXInRegion >= REGION_SIZE_CHUNKS) {
                 chunkXInRegion = 0;
                 chunkZInRegion++;
-                if (chunkZInRegion >= Canvas.REGION_SIZE_CHUNKS) {
+                if (chunkZInRegion >= REGION_SIZE_CHUNKS) {
                     // Done!
                     markAsFinished();
                     return false;
@@ -96,8 +99,8 @@ public final class RegionRenderer {
         }
 
         private void offer() {
-            int chunkX = regionX << Canvas.REGION_SIZE_CHUNKS_BITS | chunkXInRegion;
-            int chunkZ = regionZ << Canvas.REGION_SIZE_CHUNKS_BITS | chunkZInRegion;
+            int chunkX = regionX << REGION_SIZE_CHUNKS_BITS | chunkXInRegion;
+            int chunkZ = regionZ << REGION_SIZE_CHUNKS_BITS | chunkZInRegion;
 
             boolean alreadyLoaded = world.isChunkLoaded(chunkX, chunkZ);
             Chunk chunk = world.getChunkAt(chunkX, chunkZ);

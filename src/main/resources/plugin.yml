@@ -2,7 +2,6 @@ name: ${project.name}
 version: ${project.version}
 main: nl.rutgerkok.topographica.Main
 author: Rutger Kok
-load: STARTUP
 permissions:
   cartographica.render:
     description: "Map rendering."
