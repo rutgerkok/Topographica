@@ -16,11 +16,11 @@ import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.render.RawImage;
 import nl.rutgerkok.topographica.render.RegionRenderer;
 import nl.rutgerkok.topographica.util.Logg;
-import nl.rutgerkok.topographica.webserver.Webserver;
+import nl.rutgerkok.topographica.webserver.WebServer;
 
 public class Main extends JavaPlugin {
 
-    private final Webserver webserver;
+    private final WebServer webserver;
     private final Executor workerThread = new Executor() {
 
         @Override
@@ -32,8 +32,7 @@ public class Main extends JavaPlugin {
     private Config config;
 
     public Main() {
-        webserver = new Webserver();
-
+        webserver = new WebServer();
     }
 
     private World getWorld(CommandSender sender) {

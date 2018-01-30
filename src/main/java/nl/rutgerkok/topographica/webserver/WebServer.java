@@ -27,7 +27,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import nl.rutgerkok.topographica.config.WebConfig;
 import nl.rutgerkok.topographica.util.Logg;
 
-final class Webserver {
+public final class WebServer {
 
 
     private ChannelFuture channel;
@@ -35,7 +35,7 @@ final class Webserver {
     private final EventLoopGroup slaveGroup;
     private final WebRequestHandler requestHandler = new WebRequestHandler();
 
-    public Webserver() {
+    public WebServer() {
         masterGroup = new NioEventLoopGroup();
         slaveGroup = new NioEventLoopGroup();
     }

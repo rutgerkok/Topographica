@@ -19,7 +19,7 @@ public final class WorldConfig {
         Location spawn = world.getSpawnLocation();
         centerX = config.getInt("centerX", spawn.getBlockX());
         centerZ = config.getInt("centerZ", spawn.getBlockZ());
-        radius = config.getInt("renderRadius");
+        radius = config.getInt("radius");
         if (radius < REGION_SIZE_BLOCKS && radius != 0) {
             log.warn("The radius " + radius + " in world " + world.getName() + " was too small. Changed it to "
                     + REGION_SIZE_BLOCKS);
