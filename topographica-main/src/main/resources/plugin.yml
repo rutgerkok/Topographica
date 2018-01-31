@@ -1,0 +1,13 @@
+name: "@PROJECT_NAME@"
+version: "@VERSION@"
+main: nl.rutgerkok.topographica.Main
+author: Rutger Kok
+permissions:
+  cartographica.render:
+    description: "Map rendering."
+    default: op
+commands:
+  render:
+    description: "Renders a region."
+    permission: "cartographica.render"
+    usage: "/<command>"

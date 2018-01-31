@@ -1,0 +1,95 @@
+// TerrainControl build script
+// TerrainControl consists of the core project, generator modules that depend on core,
+// and the platform-specific code that depends on Spigot/Sponge and the core project.
+import org.apache.tools.ant.filters.ReplaceTokens
+
+defaultTasks "spotlessApply", 'build'
+
+allprojects {
+    version = "0.0.1-SNAPSHOT"
+    group = "nl.rutgerkok.topographica"
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" } // For Spotless
+        jcenter() // For Shadow
+    }
+    dependencies {
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.6.0"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
+subprojects {
+
+    repositories {
+        mavenCentral()
+        maven {
+            url 'https://hub.spigotmc.org/nexus/content/groups/public/' // Spigot repo
+        }
+	}
+
+    apply plugin: "java"
+    apply plugin: "com.diffplug.gradle.spotless"
+
+    sourceCompatibility = '1.7'
+    targetCompatibility = '1.7'
+
+    spotless { // Code formatting settings
+        java {
+            removeUnusedImports()
+            importOrderFile rootProject.file('misc/eclipse-importorder-settings.importorder')
+            trimTrailingWhitespace()
+            endWithNewline()
+            eclipse().configFile rootProject.file('misc/eclipse-formatting-settings.xml')
+            paddedCell()
+        }
+    }
+
+}
+
+// Main
+project(':topographica-main') {
+    dependencies { // Kept in sync with Minecraft
+        compileOnly 'com.google.guava:guava:18.0'
+        compileOnly 'io.netty:netty-all:4.1.19.Final'
+        compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+    }
+
+    processResources { // config.yml and plugin.yml replacements
+        filter ReplaceTokens, tokens: [
+        	"PROJECT_NAME": "Topographica",
+            "VERSION": version,
+            "DATE": new Date().format('yyyy-MM-dd')
+        ]
+    }
+    
+}
+
+// Some replacement classes for modern Bukkit versions
+project(':topographica-modern') {
+
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+	repositories {
+		mavenLocal() // Bukkit is not yet anywhere else
+	}
+
+    dependencies {
+        compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
+        compile project(':topographica-main')
+    }
+
+    shadowJar {
+        dependencies {
+            exclude(dependency('com.google.guava:guava'))
+        }
+        destinationDir = file("$rootDir")
+        archiveName = "Topographica.${extension}"
+    }
+    
+    build.dependsOn(shadowJar)
+}
+
