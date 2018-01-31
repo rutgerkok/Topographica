@@ -6,10 +6,10 @@ import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS;
 
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.config.ColorConfig;
-
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+
+import nl.rutgerkok.topographica.config.ColorConfig;
 
 public class ChunkRenderer {
 
@@ -51,12 +51,17 @@ public class ChunkRenderer {
      * @param canvas
      *            Canvas to render to.
      */
+    @SuppressWarnings("deprecation")
     public void render(ChunkSnapshot chunk, Canvas canvas) {
         for (int x = 0; x < CHUNK_SIZE_BLOCKS; x += PIXEL_SIZE_BLOCKS) {
             for (int z = 0; z < CHUNK_SIZE_BLOCKS; z += PIXEL_SIZE_BLOCKS) {
-                int y = chunk.getHighestBlockYAt(x, z) - 1;
-                @SuppressWarnings("deprecation")
-                Material material = Material.getMaterial(chunk.getBlockTypeId(x, y, z));
+                int y = chunk.getHighestBlockYAt(x, z);
+                int blockId = chunk.getBlockTypeId(x, y, z);
+                if (blockId == 0 && y > 0) {
+                    // Air, try one block lower
+                    blockId = chunk.getBlockTypeId(x, y - 1, z);
+                }
+                Material material = Material.getMaterial(blockId);
 
                 int worldX = chunk.getX() << CHUNK_SIZE_BLOCKS_BITS | x;
                 int worldZ = chunk.getZ() << CHUNK_SIZE_BLOCKS_BITS | z;

@@ -21,7 +21,20 @@ public class ColorConfig {
     }
 
     private static Color parseColor(String name) {
-        // Try color code (#ff00aa)
+        Color color = parseHexColor(name);
+        if (color != null) {
+            return color;
+        }
+
+        color = parseNamedColor(name);
+        if (color != null) {
+            return color;
+        }
+
+        return parseRgbColor(name);
+    }
+
+    private static Color parseHexColor(String name) {
         try {
             if (name.startsWith("#") && name.length() == 7) {
                 return Color.fromRGB(
@@ -30,26 +43,27 @@ public class ColorConfig {
                         Integer.valueOf(name.substring(5, 7), 16));
             }
         } catch (NumberFormatException e) {
-            return null;
+            // Ignored
         }
+        return null;
+    }
 
-        // Named colors
+    private static Color parseNamedColor(String name) {
         try {
             return (Color) Color.class.getField(name.toUpperCase(Locale.ROOT)).get(null);
         } catch (ReflectiveOperationException | ClassCastException e1) {
-            // Ignore
+            return null;
         }
+    }
 
-        // RGB colors (like the CSS rgb function)
-        Pattern c = Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
-        Matcher m = c.matcher(name);
-        if (m.matches()) {
-            return Color.fromRGB(Integer.valueOf(m.group(1)),
-                    Integer.valueOf(m.group(2)),
-                    Integer.valueOf(m.group(3)));
+    private static Color parseRgbColor(String name) {
+        Pattern pattern = Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
+        Matcher matcher = pattern.matcher(name);
+        if (matcher.matches()) {
+            return Color.fromRGB(Integer.valueOf(matcher.group(1)),
+                    Integer.valueOf(matcher.group(2)),
+                    Integer.valueOf(matcher.group(3)));
         }
-
-        // Give up
         return null;
     }
 
