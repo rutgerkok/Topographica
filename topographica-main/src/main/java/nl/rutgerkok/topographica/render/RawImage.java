@@ -8,6 +8,7 @@ import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_PIXELS_BI
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -37,6 +38,7 @@ public class RawImage implements Canvas {
     }
 
     public void outputAndReset(Path file) throws IOException {
+        Files.createDirectories(file.getParent());
         ImageIO.write(image, "JPG", file.toFile());
     }
 

@@ -48,6 +48,15 @@ public final class Config {
         return webConfig;
     }
 
+    /**
+     * The amount of worker rendering on the server.
+     *
+     * @return The amount of workers.
+     */
+    public int getWorkers() {
+        return 1;
+    }
+
     private Map<String, WorldConfig> getWorldConfigs(Server server, FileConfiguration config, Logg log) {
         Map<String, WorldConfig> configsByWorld = new HashMap<>();
 

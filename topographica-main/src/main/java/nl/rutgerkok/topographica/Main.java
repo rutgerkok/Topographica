@@ -1,14 +1,9 @@
 package nl.rutgerkok.topographica;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.concurrent.Executor;
-import java.util.logging.Level;
 
 import nl.rutgerkok.topographica.config.Config;
-import nl.rutgerkok.topographica.config.WorldConfig;
-import nl.rutgerkok.topographica.render.RawImage;
-import nl.rutgerkok.topographica.render.RegionRenderer;
+import nl.rutgerkok.topographica.render.WorldRenderer;
 import nl.rutgerkok.topographica.util.Logg;
 import nl.rutgerkok.topographica.webserver.WebServer;
 
@@ -50,22 +45,15 @@ public class Main extends JavaPlugin {
     public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
         switch (command.getName()) {
             case "render":
-                final RawImage image = new RawImage();
-                World world = getWorld(sender);
-                WorldConfig worldConfig = this.config.getConfig(world);
-                new RegionRenderer(worldConfig, getWorld(sender), 0, 0).render(this, image).addListener(new Runnable() {
+                final World world = getWorld(sender);
+                WorldRenderer.renderWorld(this, world, config).addListener(new Runnable() {
+
                     @Override
                     public void run() {
-                        try {
-                            Path output = getDataFolder().toPath().resolve("map.jpg");
-                            image.outputAndReset(output);
-                            sender.sendMessage("Finished writing map to " + output);
-                        } catch (IOException e) {
-                            sender.sendMessage("Error writing map: " + e.getMessage());
-                            getLogger().log(Level.SEVERE, "Error writing map", e);
-                        }
+                        sender.sendMessage("Done rendering " + world.getName() + "!");
                     }
                 }, workerThread);
+                sender.sendMessage("Starting full render of world " + world.getName());
                 return true;
             default:
                 return false;

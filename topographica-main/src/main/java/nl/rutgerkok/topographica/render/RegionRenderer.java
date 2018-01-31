@@ -7,16 +7,16 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import nl.rutgerkok.topographica.config.WorldConfig;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+
+import nl.rutgerkok.topographica.config.WorldConfig;
 
 public final class RegionRenderer {
 
@@ -36,7 +36,7 @@ public final class RegionRenderer {
 
         @Override
         public void run() {
-            while (true) {
+            while (!future.isDone()) {
                 try {
                     ChunkTask task = renderQueue.take();
                     if (task.snapshot == null) {
