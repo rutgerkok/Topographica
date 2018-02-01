@@ -1,6 +1,7 @@
 package nl.rutgerkok.topographica.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -9,13 +10,22 @@ import java.util.logging.Logger;
  * a later moment.
  *
  */
-public class Logg {
+public final class StartupLog {
 
     private final List<String> messages = new ArrayList<>();
     private final Logger logger;
 
-    public Logg(Logger logger) {
+    public StartupLog(Logger logger) {
         this.logger = logger;
+    }
+
+    /**
+     * Gets all messages displayed up until now.
+     * 
+     * @return All messages.
+     */
+    public List<String> getMessages() {
+        return Collections.unmodifiableList(messages);
     }
 
     public void severe(String message) {

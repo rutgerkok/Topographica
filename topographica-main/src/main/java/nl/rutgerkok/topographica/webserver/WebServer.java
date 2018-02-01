@@ -5,7 +5,7 @@ import static io.netty.buffer.Unpooled.copiedBuffer;
 import java.net.BindException;
 
 import nl.rutgerkok.topographica.config.WebConfig;
-import nl.rutgerkok.topographica.util.Logg;
+import nl.rutgerkok.topographica.util.StartupLog;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -51,7 +51,7 @@ public final class WebServer {
         }
     }
 
-    public void enable(WebConfig config, Logg log) {
+    public void enable(WebConfig config, StartupLog log) {
 
         try {
             final ServerBootstrap bootstrap = new ServerBootstrap()

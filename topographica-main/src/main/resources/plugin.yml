@@ -6,6 +6,9 @@ permissions:
   cartographica.render:
     description: "Map rendering."
     default: op
+  cartographica.admin:
+    description: "Change @PROJECT_NAME@ settings."
+    default: op
 commands:
   render:
     description: "Renders a region."

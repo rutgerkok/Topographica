@@ -12,7 +12,7 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 
-import nl.rutgerkok.topographica.util.Logg;
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public class ColorConfig {
 
@@ -69,7 +69,7 @@ public class ColorConfig {
 
     private Map<Material, Color> colorsByMaterial = new EnumMap<>(Material.class);
 
-    public ColorConfig(ConfigurationSection configurationSection, Logg log) {
+    public ColorConfig(ConfigurationSection configurationSection, StartupLog log) {
         Set<String> materialNames = configurationSection.getKeys(false);
         materialNames.addAll(configurationSection.getDefaultSection().getKeys(false));
         for (String materialName : materialNames) {

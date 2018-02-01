@@ -4,7 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.util.Logg;
+import nl.rutgerkok.topographica.util.StartupLog;
 
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -14,7 +14,7 @@ public final class WebConfig {
     private final String webFolder;
     private final Path pluginDataFolder;
 
-    WebConfig(ConfigurationSection config, Path pluginDataFolder, Logg log) {
+    WebConfig(ConfigurationSection config, Path pluginDataFolder, StartupLog log) {
         this.pluginDataFolder = Objects.requireNonNull(pluginDataFolder);
 
         this.webFolder = config.getString("webroot");

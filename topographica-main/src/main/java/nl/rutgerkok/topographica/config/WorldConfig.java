@@ -3,7 +3,7 @@ package nl.rutgerkok.topographica.config;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS_BITS;
 
-import nl.rutgerkok.topographica.util.Logg;
+import nl.rutgerkok.topographica.util.StartupLog;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,7 +17,7 @@ public final class WorldConfig {
     private final long radiusSquared;
     private final ColorConfig colorConfig;
 
-    WorldConfig(World world, ConfigurationSection config, Logg log) {
+    WorldConfig(World world, ConfigurationSection config, StartupLog log) {
         Location spawn = world.getSpawnLocation();
         centerX = config.getInt("centerX", spawn.getBlockX());
         centerZ = config.getInt("centerZ", spawn.getBlockZ());
