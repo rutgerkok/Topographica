@@ -1,5 +1,6 @@
 package nl.rutgerkok.topographica.config;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -20,9 +21,9 @@ public final class Config {
     private final Map<String, WorldConfig> configsByWorld;
     private final WebConfig webConfig;
 
-    public Config(Server server, FileConfiguration config, Logg log) {
+    public Config(Server server, FileConfiguration config, Path dataFolder, Logg log) {
         this.configsByWorld = getWorldConfigs(server, config, log);
-        this.webConfig = new WebConfig(config.getConfigurationSection("webserver"), log);
+        this.webConfig = new WebConfig(config.getConfigurationSection("webserver"), dataFolder, log);
     }
 
     private void copyToDefaults(ConfigurationSection defaults, ConfigurationSection addTo) {

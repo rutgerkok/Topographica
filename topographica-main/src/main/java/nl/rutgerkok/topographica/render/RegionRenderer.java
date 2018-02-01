@@ -7,16 +7,13 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import nl.rutgerkok.topographica.config.WorldConfig;
+import nl.rutgerkok.topographica.scheduler.Computation;
+import nl.rutgerkok.topographica.scheduler.TGRunnable;
+
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-
-import nl.rutgerkok.topographica.config.WorldConfig;
 
 public final class RegionRenderer {
 
@@ -24,24 +21,23 @@ public final class RegionRenderer {
      * Runs on another thread, grabs as many chunks to render as it can.
      *
      */
-    private class AsyncPart extends BukkitRunnable {
+    private class AsyncPart extends TGRunnable<DrawnRegion> {
 
         private final Canvas image;
-        private final SettableFuture<Canvas> future;
 
-        public AsyncPart(Canvas image, SettableFuture<Canvas> future) {
+        public AsyncPart(Canvas image) {
+            super(Type.LONG_RUNNING);
             this.image = Objects.requireNonNull(image, "image");
-            this.future = Objects.requireNonNull(future, "future");
         }
 
         @Override
         public void run() {
-            while (!future.isDone()) {
+            while (!future.isCancelled()) {
                 try {
                     ChunkTask task = renderQueue.take();
                     if (task.snapshot == null) {
                         // Done!
-                        future.set(image);
+                        future.set(new DrawnRegion(regionX, regionZ, image));
                         return; // Ends task
                     } else {
                         chunkRenderer.render(task.snapshot, image);
@@ -69,20 +65,37 @@ public final class RegionRenderer {
         }
     }
 
+    static class DrawnRegion {
+        final int regionX;
+        final int regionZ;
+        final Canvas canvas;
+
+        public DrawnRegion(int regionX, int regionZ, Canvas canvas) {
+            this.regionX = regionX;
+            this.regionZ = regionZ;
+            this.canvas = Objects.requireNonNull(canvas);
+        }
+    }
+
     /**
      * Runs on the main thread, makes sure new chunks are always available for
      * the region renderer until the last region has been rendered.
      *
      */
-    private class SyncPart extends BukkitRunnable {
+    private class SyncPart extends TGRunnable<Void> {
 
-        private int chunkXInRegion;
-        private int chunkZInRegion;
+        private int chunkXInRegion = 0;
+        private int chunkZInRegion = 0;
+
+        public SyncPart() {
+            super(Type.EVERY_TICK);
+        }
 
         private void markAsFinished() {
-            cancel(); // Stop this task from repeating further
-            renderQueue.add(new ChunkTask()); // Add poison object to stop the
-                                              // async render task
+            // Mark as completed, stops it from repeating further
+            future.set(null);
+            // Add poison object to complete the async render task
+            renderQueue.add(new ChunkTask());
         }
 
         private boolean next() {
@@ -134,6 +147,7 @@ public final class RegionRenderer {
     private final int regionX;
     private final int regionZ;
     private final BlockingQueue<ChunkTask> renderQueue = new LinkedBlockingQueue<>();
+
     private final ChunkRenderer chunkRenderer;
 
     public RegionRenderer(WorldConfig worldConfig, World world, int regionX, int regionZ) {
@@ -143,11 +157,8 @@ public final class RegionRenderer {
         this.regionZ = regionZ;
     }
 
-    public ListenableFuture<Canvas> render(Plugin plugin, Canvas image) {
-        SettableFuture<Canvas> settableFuture = SettableFuture.create();
-        new AsyncPart(image, settableFuture).runTaskAsynchronously(plugin);
-        new SyncPart().runTaskTimer(plugin, 0, 1);
-        return settableFuture;
+    public Computation<DrawnRegion> getRenderTasks(Canvas image) {
+        return new Computation<>(new AsyncPart(image), new SyncPart());
     }
 
 }

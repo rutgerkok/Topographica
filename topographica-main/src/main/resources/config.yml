@@ -24,6 +24,7 @@
 # ACTUAL SETTINGS BELOW
 webserver:
   port: 8088
+  webroot: web
 worlds:
   default:
     radius: 2147483647

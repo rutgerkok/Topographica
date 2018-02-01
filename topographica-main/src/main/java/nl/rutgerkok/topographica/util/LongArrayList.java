@@ -1,12 +1,49 @@
 package nl.rutgerkok.topographica.util;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Very simple array list of ints. Not thread-safe.
+ * Very simple array list of ints. Not thread-safe. After you are done
+ * collection all the ints, use {@link #toQueue()} to chane this to a
+ * thread-safe queue.
  *
  */
 public final class LongArrayList {
+
+    /**
+     * A simple thread-safe queue.
+     *
+     */
+    public static class LongQueue {
+        private final long[] storage;
+        private final int size;
+        private AtomicInteger position = new AtomicInteger(0);
+
+        private LongQueue(LongArrayList list) {
+            this.storage = list.storage;
+            this.size = list.size;
+
+            list.storage = null; // This disables the old list from working
+        }
+
+        /**
+         * Gets the next number from this queue.
+         *
+         * @return The next number.
+         * @throws NoSuchElementException
+         *             If there are no more numbers.
+         */
+        public long getNext() throws NoSuchElementException {
+            int pos = position.getAndIncrement();
+            if (pos == size) {
+                throw new NoSuchElementException();
+            }
+            return storage[pos];
+        }
+    }
+
     private long[] storage = new long[64];
     private int size = 0;
 
@@ -47,6 +84,15 @@ public final class LongArrayList {
      */
     public int size() {
         return size;
+    }
+
+    /**
+     * Converts this list to a queue. This list becomes unuseable.
+     *
+     * @return The queue.
+     */
+    public LongQueue toQueue() {
+        return new LongQueue(this);
     }
 
     @Override

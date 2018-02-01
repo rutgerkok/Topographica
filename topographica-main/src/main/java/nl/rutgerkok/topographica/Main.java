@@ -1,11 +1,12 @@
 package nl.rutgerkok.topographica;
 
-import java.util.concurrent.Executor;
-
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.render.WorldRenderer;
+import nl.rutgerkok.topographica.scheduler.Scheduler;
 import nl.rutgerkok.topographica.util.Logg;
 import nl.rutgerkok.topographica.webserver.WebServer;
+
+import com.google.common.util.concurrent.MoreExecutors;
 
 import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
@@ -17,13 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
 
     private final WebServer webserver;
-    private final Executor workerThread = new Executor() {
-
-        @Override
-        public void execute(Runnable command) {
-            getServer().getScheduler().runTaskAsynchronously(Main.this, command);
-        }
-    };
+    private Scheduler scheduler;
     private Logg log;
     private Config config;
 
@@ -46,13 +41,13 @@ public class Main extends JavaPlugin {
         switch (command.getName()) {
             case "render":
                 final World world = getWorld(sender);
-                WorldRenderer.renderWorld(this, world, config).addListener(new Runnable() {
+                scheduler.submitAll(new WorldRenderer(world, config)).addListener(new Runnable() {
 
                     @Override
                     public void run() {
-                        sender.sendMessage("Done rendering " + world.getName() + "!");
+                        sender.sendMessage("Done rendering " + world.getName());
                     }
-                }, workerThread);
+                }, MoreExecutors.directExecutor());
                 sender.sendMessage("Starting full render of world " + world.getName());
                 return true;
             default:
@@ -63,14 +58,16 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
         webserver.disable();
+        scheduler.stopAll();
     }
 
     @Override
     public void onEnable() {
         log = new Logg(getLogger());
+        scheduler = new Scheduler(this);
 
         saveDefaultConfig();
-        config = new Config(getServer(), getConfig(), log);
+        config = new Config(getServer(), getConfig(), getDataFolder().toPath(), log);
         config.write(getConfig());
         saveConfig();
 
