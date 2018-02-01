@@ -4,14 +4,15 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
+import java.util.logging.Logger;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * Used to manage long-running computations.
@@ -65,8 +66,12 @@ public final class Scheduler {
                 } catch (Throwable e) {
                     runnable.future.setException(e);
                 }
+                if (stopping) {
+                    plugin.getLogger().info("Successfully ended task: " + runnable.name);
+                }
             }
         });
+
         return runnable.future;
     }
 
@@ -146,14 +151,17 @@ public final class Scheduler {
      * Stops all current tasks gracefully, and prevents new tasks from running.
      */
     public void stopAll() {
+        Logger logger = plugin.getLogger();
         stopping = true;
         for (TGRunnable<?> active : actives) {
+            logger.info("Ending task: " + active.name);
             active.future.cancel(true);
         }
     }
 
     /**
-     * Runs the specified task.
+     * Runs the specified task. If the scheduler is currently stopping, the task
+     * will be cancelled before it can run.
      *
      * @param runnable
      *            The task.

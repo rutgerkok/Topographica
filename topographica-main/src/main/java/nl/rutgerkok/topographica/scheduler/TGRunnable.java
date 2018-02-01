@@ -33,14 +33,16 @@ public abstract class TGRunnable<T> {
     }
 
     protected final Type type;
+    final String name;
 
     /**
      * This future will automatically be cancelled on server shutdown.
      */
     protected final SettableFuture<T> future = SettableFuture.create();
 
-    public TGRunnable(Type type) {
-        this.type = Objects.requireNonNull(type);
+    public TGRunnable(Type type, String name) {
+        this.type = Objects.requireNonNull(type, "type");
+        this.name = Objects.requireNonNull(name, "name");
     }
 
     /**
@@ -53,5 +55,10 @@ public abstract class TGRunnable<T> {
      *             repeating task, no more repeats will be performed.
      */
     public abstract void run() throws Throwable;
+
+    @Override
+    public String toString() {
+        return name;
+    }
 
 }

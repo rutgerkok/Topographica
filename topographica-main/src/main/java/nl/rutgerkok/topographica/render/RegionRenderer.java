@@ -6,6 +6,7 @@ import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_CHUNKS_BI
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.scheduler.Computation;
@@ -26,15 +27,19 @@ public final class RegionRenderer {
         private final Canvas image;
 
         public AsyncPart(Canvas image) {
-            super(Type.LONG_RUNNING);
+            super(Type.LONG_RUNNING, "Chunk painter");
             this.image = Objects.requireNonNull(image, "image");
         }
 
         @Override
         public void run() {
-            while (!future.isCancelled()) {
+            while (!future.isDone()) {
                 try {
-                    ChunkTask task = renderQueue.take();
+                    ChunkTask task = renderQueue.poll(500, TimeUnit.MILLISECONDS);
+                    if (task == null) {
+                        // This will check future.isDone before trying again
+                        continue;
+                    }
                     if (task.snapshot == null) {
                         // Done!
                         future.set(new DrawnRegion(regionX, regionZ, image));
@@ -88,7 +93,7 @@ public final class RegionRenderer {
         private int chunkZInRegion = 0;
 
         public SyncPart() {
-            super(Type.EVERY_TICK);
+            super(Type.EVERY_TICK, "Chunk loader");
         }
 
         private void markAsFinished() {
@@ -117,8 +122,8 @@ public final class RegionRenderer {
             int chunkZ = regionZ << REGION_SIZE_CHUNKS_BITS | chunkZInRegion;
 
             boolean alreadyLoaded = world.isChunkLoaded(chunkX, chunkZ);
-            Chunk chunk = world.getChunkAt(chunkX, chunkZ);
-            if (chunk.load(false)) {
+            if (world.loadChunk(chunkX, chunkZ, false)) {
+                Chunk chunk = world.getChunkAt(chunkX, chunkZ);
                 ChunkSnapshot snapshot = chunk.getChunkSnapshot(true, false, false);
                 if (!alreadyLoaded) {
                     chunk.unload(false);

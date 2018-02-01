@@ -3,11 +3,11 @@ package nl.rutgerkok.topographica.config;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS_BITS;
 
+import nl.rutgerkok.topographica.util.StartupLog;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-
-import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class WorldConfig {
 

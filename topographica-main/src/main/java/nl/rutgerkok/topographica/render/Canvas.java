@@ -38,6 +38,8 @@ public final class Canvas {
     public void outputAndReset(Path file) throws IOException {
         Files.createDirectories(file.getParent());
         ImageIO.write(image, "JPG", file.toFile());
+
+        clearImage();
     }
 
     /**

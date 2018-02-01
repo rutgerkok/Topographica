@@ -7,17 +7,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.bukkit.Server;
-import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
+import nl.rutgerkok.topographica.util.StartupLog;
 
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import nl.rutgerkok.topographica.util.StartupLog;
+import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public final class Config {
 
@@ -26,7 +26,8 @@ public final class Config {
         @Override
         public String apply(World world) {
             return world.getName().toLowerCase(Locale.ROOT);
-        }};
+        }
+    };
 
     private final Map<String, WorldConfig> configsByWorld;
     private final WebConfig webConfig;
@@ -36,7 +37,7 @@ public final class Config {
         this.webConfig = new WebConfig(config.getConfigurationSection("web-server"), dataFolder, log);
     }
 
-    private void copyToDefaults(ConfigurationSection defaults, ConfigurationSection addTo) {
+    private void setAsDefaults(ConfigurationSection defaults, ConfigurationSection addTo) {
         for (Entry<String, Object> value : defaults.getValues(true).entrySet()) {
             addTo.addDefault(value.getKey(), value.getValue());
         }
@@ -74,7 +75,10 @@ public final class Config {
         // Put some default values
         World defaultWorld = server.getWorlds().get(0);
         ConfigurationSection defaultWorldSection = config.getConfigurationSection("worlds.default");
-        configsByWorld.put("default", new WorldConfig(defaultWorld, defaultWorldSection, log));
+        WorldConfig defaultWorldConfig = new WorldConfig(defaultWorld, defaultWorldSection, log);
+        configsByWorld.put("default", defaultWorldConfig);
+        // Let other worlds use updated defaults:
+        defaultWorldConfig.write(defaultWorldSection);
 
         // Determine worlds to read
         ConfigurationSection worldsSection = config.getConfigurationSection("worlds");
@@ -95,7 +99,7 @@ public final class Config {
             }
 
             World world = MoreObjects.firstNonNull(server.getWorld(worldName), defaultWorld);
-            copyToDefaults(defaultWorldSection, worldSection);
+            setAsDefaults(defaultWorldSection, worldSection);
 
             configsByWorld.put(worldName.toLowerCase(Locale.ROOT), new WorldConfig(world, worldSection, log));
         }
@@ -109,7 +113,7 @@ public final class Config {
                 actual.set(entry.getKey(), null);
             }
         }
-                
+
     }
 
     private void wipeConfig(FileConfiguration to) {
