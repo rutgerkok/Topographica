@@ -7,6 +7,7 @@ import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS;
 import java.util.Objects;
 
 import org.bukkit.ChunkSnapshot;
+import org.bukkit.Color;
 import org.bukkit.Material;
 
 import nl.rutgerkok.topographica.config.ColorConfig;
@@ -43,6 +44,34 @@ public class ChunkRenderer {
         this.colorMap = Objects.requireNonNull(colorMap, "colorMap");
     }
 
+    protected Color adjustColor(Color color, int y) {
+        if (y > 74) {
+            // Make lighter
+            if (y > 194) {
+                y = 194;
+            }
+            double adjustment = (y - 74) / 200;
+            return makeLighter(color, adjustment);
+        }
+        return color;
+    }
+
+    /**
+     * Makes the color lighter.
+     *
+     * @param color
+     *            The color to chane.
+     * @param amount
+     *            Amount: 0 is no change, 1 is completely white.
+     * @return
+     */
+    private Color makeLighter(Color color, double amount) {
+        int red = (int) (color.getRed() + (amount * (255 - color.getRed())));
+        int green = (int) (color.getGreen() + (amount * (255 - color.getGreen())));
+        int blue = (int) (color.getBlue() + (amount * (255 - color.getBlue())));
+        return Color.fromRGB(red, green, blue);
+    }
+
     /**
      * Renders the chunk to the canvas.
      *
@@ -65,7 +94,7 @@ public class ChunkRenderer {
 
                 int worldX = chunk.getX() << CHUNK_SIZE_BLOCKS_BITS | x;
                 int worldZ = chunk.getZ() << CHUNK_SIZE_BLOCKS_BITS | z;
-                canvas.setColor(worldX, worldZ, colorMap.getColor(material));
+                canvas.setColor(worldX, worldZ, adjustColor(colorMap.getColor(material), y));
             }
         }
 

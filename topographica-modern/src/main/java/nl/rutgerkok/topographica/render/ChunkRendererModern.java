@@ -4,10 +4,10 @@ import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_SIZE_BLOCKS_BITS;
 import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS;
 
+import nl.rutgerkok.topographica.config.ColorConfig;
+
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
-
-import nl.rutgerkok.topographica.config.ColorConfig;
 
 public final class ChunkRendererModern extends ChunkRenderer {
 
@@ -28,7 +28,7 @@ public final class ChunkRendererModern extends ChunkRenderer {
 
                 int worldX = chunk.getX() << CHUNK_SIZE_BLOCKS_BITS | x;
                 int worldZ = chunk.getZ() << CHUNK_SIZE_BLOCKS_BITS | z;
-                canvas.setColor(worldX, worldZ, colorMap.getColor(material));
+                canvas.setColor(worldX, worldZ, adjustColor(colorMap.getColor(material), y));
             }
         }
 
