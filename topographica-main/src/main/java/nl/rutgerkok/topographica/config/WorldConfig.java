@@ -51,7 +51,7 @@ public final class WorldConfig {
      *            Z position of the region.
      * @return True if it should be rendered, false otherwise.
      */
-    public boolean shouldRender(long regionX, long regionZ) {
+    public boolean shouldRender(int regionX, int regionZ) {
         if (radius == Integer.MAX_VALUE) {
             return true;
         }

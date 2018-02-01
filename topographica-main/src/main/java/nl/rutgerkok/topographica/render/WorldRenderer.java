@@ -11,6 +11,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bukkit.World;
+
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.render.RegionRenderer.DrawnRegion;
@@ -20,8 +22,6 @@ import nl.rutgerkok.topographica.scheduler.TGRunnable;
 import nl.rutgerkok.topographica.scheduler.TGRunnable.Type;
 import nl.rutgerkok.topographica.util.LongArrayList;
 import nl.rutgerkok.topographica.util.LongArrayList.LongQueue;
-
-import org.bukkit.World;
 
 public class WorldRenderer extends ComputationFactory<LongQueue, DrawnRegion> {
 
@@ -89,7 +89,7 @@ public class WorldRenderer extends ComputationFactory<LongQueue, DrawnRegion> {
                         }
                         long regionX = Integer.parseInt(matcher.group(1)) & 0x00000000ffffffffL;
                         long regionZ = Integer.parseInt(matcher.group(2)) & 0x00000000ffffffffL;
-                        if (worldConfig.shouldRender(regionX, regionZ)) {
+                        if (worldConfig.shouldRender((int) regionX, (int) regionZ)) {
                             regions.add((regionX << Integer.SIZE) | regionZ);
                         }
 
