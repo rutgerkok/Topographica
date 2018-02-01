@@ -3,11 +3,11 @@ package nl.rutgerkok.topographica.config;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS_BITS;
 
-import nl.rutgerkok.topographica.util.StartupLog;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class WorldConfig {
 
@@ -19,8 +19,8 @@ public final class WorldConfig {
 
     WorldConfig(World world, ConfigurationSection config, StartupLog log) {
         Location spawn = world.getSpawnLocation();
-        centerX = config.getInt("centerX", spawn.getBlockX());
-        centerZ = config.getInt("centerZ", spawn.getBlockZ());
+        centerX = config.getInt("center-x", spawn.getBlockX());
+        centerZ = config.getInt("center-z", spawn.getBlockZ());
         int radius = config.getInt("radius");
         if (radius < REGION_SIZE_BLOCKS && radius != 0) {
             log.warn("The radius " + radius + " in world " + world.getName() + " was too small. Changed it to "
@@ -66,8 +66,8 @@ public final class WorldConfig {
     }
 
     void write(ConfigurationSection section) {
-        section.set("centerX", centerX);
-        section.set("centerZ", centerZ);
+        section.set("center-x", centerX);
+        section.set("center-z", centerZ);
         section.set("radius", radius);
         colorConfig.write(section.createSection("colors"));
     }

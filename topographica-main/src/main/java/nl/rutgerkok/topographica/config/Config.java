@@ -21,11 +21,11 @@ import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class Config {
 
-    private static Function<? super World, ? extends String> getName = new Function<World, String>() {
+    private static Function<? super World, ? extends String> getNameLowercase = new Function<World, String>() {
 
         @Override
         public String apply(World world) {
-            return world.getName();
+            return world.getName().toLowerCase(Locale.ROOT);
         }};
 
     private final Map<String, WorldConfig> configsByWorld;
@@ -33,7 +33,7 @@ public final class Config {
 
     public Config(Server server, FileConfiguration config, Path dataFolder, StartupLog log) {
         this.configsByWorld = getWorldConfigs(server, config, log);
-        this.webConfig = new WebConfig(config.getConfigurationSection("webserver"), dataFolder, log);
+        this.webConfig = new WebConfig(config.getConfigurationSection("web-server"), dataFolder, log);
     }
 
     private void copyToDefaults(ConfigurationSection defaults, ConfigurationSection addTo) {
@@ -79,7 +79,7 @@ public final class Config {
         // Determine worlds to read
         ConfigurationSection worldsSection = config.getConfigurationSection("worlds");
         Set<String> worldNames = worldsSection.getKeys(false);
-        worldNames.addAll(Lists.transform(server.getWorlds(), getName));
+        worldNames.addAll(Lists.transform(server.getWorlds(), getNameLowercase));
         worldNames.remove("default");
 
         // Read worlds
@@ -103,6 +103,15 @@ public final class Config {
         return ImmutableMap.copyOf(configsByWorld);
     }
 
+    private void pruneDefaults(ConfigurationSection defaults, ConfigurationSection actual) {
+        for (Entry<String, Object> entry : actual.getValues(true).entrySet()) {
+            if (entry.getValue().equals(defaults.get(entry.getKey()))) {
+                actual.set(entry.getKey(), null);
+            }
+        }
+                
+    }
+
     private void wipeConfig(FileConfiguration to) {
         for (String key : to.getKeys(false)) {
             to.set(key, null);
@@ -118,7 +127,7 @@ public final class Config {
     public void write(FileConfiguration to) {
         wipeConfig(to);
 
-        webConfig.write(to.createSection("webserver"));
+        webConfig.write(to.createSection("web-server"));
 
         ConfigurationSection defaultWorldSection = to.createSection("worlds.default");
         configsByWorld.get("default").write(defaultWorldSection);
@@ -128,6 +137,7 @@ public final class Config {
             }
             ConfigurationSection section = to.createSection("worlds." + worldConfig.getKey());
             worldConfig.getValue().write(section);
+            pruneDefaults(defaultWorldSection, section);
         }
     }
 

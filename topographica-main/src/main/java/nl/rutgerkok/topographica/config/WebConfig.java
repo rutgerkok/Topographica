@@ -4,9 +4,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.util.StartupLog;
-
 import org.bukkit.configuration.ConfigurationSection;
+
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class WebConfig {
 
@@ -17,7 +17,7 @@ public final class WebConfig {
     WebConfig(ConfigurationSection config, Path pluginDataFolder, StartupLog log) {
         this.pluginDataFolder = Objects.requireNonNull(pluginDataFolder);
 
-        this.webFolder = config.getString("webroot");
+        this.webFolder = config.getString("web-root");
         int port = config.getInt("port");
         if (port <= 0) {
             log.warn("Ignoring invalid web server port: " + port);
@@ -54,6 +54,6 @@ public final class WebConfig {
 
     void write(ConfigurationSection config) {
         config.set("port", port);
-        config.set("webroot", webFolder);
+        config.set("web-root", webFolder);
     }
 }

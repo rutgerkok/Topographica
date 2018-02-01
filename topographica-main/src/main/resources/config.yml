@@ -3,28 +3,32 @@
 # EXPLANTATION OF THE SETTINGS
 # ... scroll down for the actual settings ...
 # 
-# webServer:
-#   Here the internal web server is configured. You can set
-#   at what port it listens. If you have set the port to 8088,
-#   then the map should appear in your web browser at
-#   http://<your-server-ip>:8088/
-#   If it does not, then that port is probably blocked. Look
-#   for errors in your console, try a different port or contact
-#   your hosting provider.
+# web-server:
+#   Here the internal web server is configured.
+#   port: 
+#     The port at which the web server listens. If you have set the port to
+#     8088, then the map should appear in your web browser at
+#     http://<your-server-ip>:8088/ . If it does not, then that port is probably
+#     blocked. Look for errors in your console, try a different port or contact
+#     your hosting provider.
+#   web-root:
+#     The map images are placed in this directory. Normally, this directory
+#     resides inside plugins/@PROJECT_NAME@/ , but you can set the web root to
+#     any writeable directory.
 # 
 # worlds:
 #   Here each world can be configured. The world named "default"
 #   is used for all worlds that do not have their own settings.
 #   The most important setting is the radius. The radius is set
 #   in blocks, and controls how much of the world is rendered
-#   around the center.
+#   around the center. A radius of 0 disables the map for that world.
 # 
 # 
 # 
 # ACTUAL SETTINGS BELOW
-webserver:
+web-server:
   port: 8088
-  webroot: web
+  web-root: web
 worlds:
   default:
     radius: 2147483647
