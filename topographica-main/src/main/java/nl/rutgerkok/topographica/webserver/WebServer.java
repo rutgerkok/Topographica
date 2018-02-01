@@ -4,8 +4,8 @@ import static io.netty.buffer.Unpooled.copiedBuffer;
 
 import java.net.BindException;
 
-import nl.rutgerkok.topographica.config.WebConfig;
-import nl.rutgerkok.topographica.util.StartupLog;
+import org.bukkit.plugin.Plugin;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,17 +26,22 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
+import nl.rutgerkok.topographica.config.WebConfig;
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class WebServer {
 
     private ChannelFuture channel;
     private final EventLoopGroup masterGroup;
     private final EventLoopGroup slaveGroup;
-    private final WebRequestHandler requestHandler = new WebRequestHandler();
+    private final WebRequestHandler requestHandler;
 
-    public WebServer() {
+    public WebServer(Plugin plugin, WebConfig webConfig, StartupLog log) {
         masterGroup = new NioEventLoopGroup();
         slaveGroup = new NioEventLoopGroup();
+        requestHandler = new WebRequestHandler(plugin, webConfig);
+
+        enable(webConfig, log);
     }
 
     public void disable() {
@@ -51,7 +56,7 @@ public final class WebServer {
         }
     }
 
-    public void enable(WebConfig config, StartupLog log) {
+    private void enable(WebConfig config, StartupLog log) {
 
         try {
             final ServerBootstrap bootstrap = new ServerBootstrap()

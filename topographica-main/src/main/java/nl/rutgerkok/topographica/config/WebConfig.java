@@ -4,9 +4,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.util.StartupLog;
-
 import org.bukkit.configuration.ConfigurationSection;
+
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class WebConfig {
 
@@ -32,7 +32,7 @@ public final class WebConfig {
      * @return The image path.
      */
     public Path getImagesFolder() {
-        return getWebFolder().resolve("images");
+        return getWebFolder().resolve(WebPaths.IMAGES);
     }
 
     /**

@@ -1,11 +1,5 @@
 package nl.rutgerkok.topographica;
 
-import nl.rutgerkok.topographica.config.Config;
-import nl.rutgerkok.topographica.render.WorldRenderer;
-import nl.rutgerkok.topographica.scheduler.Scheduler;
-import nl.rutgerkok.topographica.util.StartupLog;
-import nl.rutgerkok.topographica.webserver.WebServer;
-
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.bukkit.World;
@@ -15,16 +9,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import nl.rutgerkok.topographica.config.Config;
+import nl.rutgerkok.topographica.render.WorldRenderer;
+import nl.rutgerkok.topographica.scheduler.Scheduler;
+import nl.rutgerkok.topographica.util.StartupLog;
+import nl.rutgerkok.topographica.webserver.WebServer;
+
 public class Main extends JavaPlugin {
 
-    private final WebServer webserver;
+    private WebServer webserver;
     private Scheduler scheduler;
     private StartupLog log;
     private Config config;
-
-    public Main() {
-        webserver = new WebServer();
-    }
 
     private World getWorld(CommandSender sender) {
         if (sender instanceof Entity) {
@@ -75,7 +71,7 @@ public class Main extends JavaPlugin {
         scheduler = new Scheduler(this);
         config = loadConfigs();
 
-        webserver.enable(config.getWebConfig(), log);
+        webserver = new WebServer(this, config.getWebConfig(), log);
         new LogToPlayerSender(log, this).sendExistingWarnings();
     }
 
