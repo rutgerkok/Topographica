@@ -1,0 +1,33 @@
+html, body, div, header, h1 {
+	margin: 0;
+	padding: 0;
+}
+body {
+	background: black;
+	color: #eee;
+	font-family: Tahoma, sans-serif;
+}
+#map__header {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 3rem;
+	right: 0;
+}
+#map__area {
+	position: absolute;
+	left: 0;
+	top: 3rem;
+	bottom: 0;
+	right: 0;
+}
+h1 {
+	font-size: 1.5rem;
+	line-height: 3rem;
+	padding: 0 0.5em;
+}
+
+/* Leaflet styles */
+.leaflet-container {
+    background: black;
+}
