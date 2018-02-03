@@ -1,6 +1,6 @@
 name: "@PROJECT_NAME@"
 version: "@VERSION@"
-main: nl.rutgerkok.topographica.Main
+main: nl.rutgerkok.topographica.Topographica
 author: Rutger Kok
 permissions:
   cartographica.render:

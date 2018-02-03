@@ -1,4 +1,4 @@
-package nl.rutgerkok.topographica.config;
+package nl.rutgerkok.topographica.webserver;
 
 /**
  * Paths used in the web server.

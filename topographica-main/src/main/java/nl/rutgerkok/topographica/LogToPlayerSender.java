@@ -3,15 +3,15 @@ package nl.rutgerkok.topographica;
 import java.util.List;
 import java.util.Objects;
 
+import nl.rutgerkok.topographica.util.Chat;
+import nl.rutgerkok.topographica.util.Permissions;
+import nl.rutgerkok.topographica.util.StartupLog;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
-
-import nl.rutgerkok.topographica.util.Chat;
-import nl.rutgerkok.topographica.util.Permissions;
-import nl.rutgerkok.topographica.util.StartupLog;
 
 final class LogToPlayerSender implements Listener {
 
@@ -21,8 +21,17 @@ final class LogToPlayerSender implements Listener {
     LogToPlayerSender(StartupLog log, Plugin plugin) {
         this.log = Objects.requireNonNull(log, "log");
         this.plugin = Objects.requireNonNull(plugin, "plugin");
+    }
 
+    /**
+     * Registers an event handler that prints all error messages when an
+     * operator joins.
+     *
+     * @return This, for chaining.
+     */
+    LogToPlayerSender listenForNewPlayers() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        return this;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -37,15 +46,18 @@ final class LogToPlayerSender implements Listener {
     /**
      * Sends all warnings to players that are already online. (Useful after
      * plugin reloads.)
+     *
+     * @return This, for chaining.
      */
-    void sendExistingWarnings() {
+    LogToPlayerSender sendExistingWarnings() {
         List<String> messages = log.getMessages();
         if (messages.isEmpty()) {
-            return;
+            return this;
         }
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             sendWarnings(player, messages);
         }
+        return this;
     }
 
     private void sendWarnings(Player player, List<String> messages) {

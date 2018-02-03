@@ -47,15 +47,52 @@ subprojects {
             paddedCell()
         }
     }
+    
+    processResources { // Web, config.yml and plugin.yml replacements
+        filter ReplaceTokens, tokens: [
+        	"PROJECT_NAME": "Topographica",
+            "VERSION": version,
+            "DATE": new Date().format('yyyy-MM-dd')
+        ]
+    }
 
 }
 
-// Main
-project(':topographica-main') {
-    dependencies { // Kept in sync with Minecraft
+// Web server (library)
+project(':topographica-web-shared') {
+	dependencies {
         compileOnly 'com.google.guava:guava:18.0'
         compileOnly 'io.netty:netty-all:4.1.19.Final'
+    }
+}
+
+// Web server (standalone executable)
+project(':topographica-web-standalone') {
+	apply plugin: 'com.github.johnrengelman.shadow'
+
+	dependencies { // Must be included in JAR file
+        compile 'com.google.guava:guava:18.0'
+        compile 'io.netty:netty-all:4.1.19.Final'
+        compile project(':topographica-web-shared')
+    }
+    
+    shadowJar {
+        destinationDir = file("$rootDir")
+        archiveName = "Topographica-Webserver.${extension}"
+
+        manifest {
+	        attributes 'Main-Class': 'nl.rutgerkok.topographica.webserver.Main'
+	    }
+    }
+    
+    build.dependsOn(shadowJar)
+}
+
+// Spigot plugin (main)
+project(':topographica-main') {
+    dependencies {
         compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+        compile project(':topographica-web-shared')
     }
 
     processResources { // config.yml and plugin.yml replacements
@@ -68,7 +105,7 @@ project(':topographica-main') {
     
 }
 
-// Some replacement classes for modern Bukkit versions
+// Spigot plugin (extra classes that require modern Spigot versions)
 project(':topographica-modern') {
 
     apply plugin: 'com.github.johnrengelman.shadow'
@@ -85,6 +122,7 @@ project(':topographica-modern') {
     shadowJar {
         dependencies {
             exclude(dependency('com.google.guava:guava'))
+            exclude(dependency('io.netty:netty-all'))
         }
         destinationDir = file("$rootDir")
         archiveName = "Topographica.${extension}"

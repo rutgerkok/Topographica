@@ -3,8 +3,8 @@ package nl.rutgerkok.topographica.webserver;
 import static io.netty.buffer.Unpooled.copiedBuffer;
 
 import java.net.BindException;
-
-import org.bukkit.plugin.Plugin;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -26,8 +26,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
-import nl.rutgerkok.topographica.config.WebConfig;
-import nl.rutgerkok.topographica.util.StartupLog;
+import io.netty.util.ReferenceCountUtil;
 
 public final class WebServer {
 
@@ -36,12 +35,12 @@ public final class WebServer {
     private final EventLoopGroup slaveGroup;
     private final WebRequestHandler requestHandler;
 
-    public WebServer(Plugin plugin, WebConfig webConfig, StartupLog log) {
+    public WebServer(BundledFiles files, WebConfigInterface webConfig, Logger logger) throws BindException {
         masterGroup = new NioEventLoopGroup();
         slaveGroup = new NioEventLoopGroup();
-        requestHandler = new WebRequestHandler(plugin, webConfig);
+        requestHandler = new WebRequestHandler(files, webConfig, logger);
 
-        enable(webConfig, log);
+        enable(webConfig);
     }
 
     public void disable() {
@@ -56,7 +55,7 @@ public final class WebServer {
         }
     }
 
-    private void enable(WebConfig config, StartupLog log) {
+    private void enable(WebConfigInterface config) throws BindException {
 
         try {
             final ServerBootstrap bootstrap = new ServerBootstrap()
@@ -75,16 +74,18 @@ public final class WebServer {
                                         @Override
                                         public void channelRead(ChannelHandlerContext ctx, Object msg)
                                                 throws Exception {
-                                            if (msg instanceof FullHttpRequest) {
-                                                FullHttpRequest request = (FullHttpRequest) msg;
-                                                FullHttpResponse response = requestHandler.respond(request);
-                                                if (HttpUtil.isKeepAlive(request)) {
-                                                    response.headers().set(HttpHeaderNames.CONNECTION,
-                                                            HttpHeaderValues.KEEP_ALIVE);
+                                            try {
+                                                if (msg instanceof FullHttpRequest) {
+                                                    FullHttpRequest request = (FullHttpRequest) msg;
+                                                    FullHttpResponse response = requestHandler.respond(request);
+                                                    if (HttpUtil.isKeepAlive(request)) {
+                                                        response.headers().set(HttpHeaderNames.CONNECTION,
+                                                                HttpHeaderValues.KEEP_ALIVE);
+                                                    }
+                                                    ctx.writeAndFlush(response);
                                                 }
-                                                ctx.writeAndFlush(response);
-                                            } else {
-                                                super.channelRead(ctx, msg);
+                                            } finally {
+                                                ReferenceCountUtil.release(msg);
                                             }
                                         }
 
@@ -100,7 +101,7 @@ public final class WebServer {
                                             ctx.writeAndFlush(new DefaultFullHttpResponse(
                                                     HttpVersion.HTTP_1_1,
                                                     HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                                    copiedBuffer(cause.getMessage().getBytes())));
+                                                    copiedBuffer(cause.getMessage().getBytes(StandardCharsets.UTF_8))));
                                         }
                                     });
                         }
@@ -109,13 +110,6 @@ public final class WebServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             channel = bootstrap.bind(config.getPort()).sync();
         } catch (InterruptedException e) {
-        } catch (Exception e) {
-            if (e instanceof BindException) {
-                log.severe("**** FAILED TO BIND TO PORT **** \nPort " + config.getPort()
-                        + " is already in use. The map will not function.");
-                return;
-            }
-            throw e;
         }
     }
 

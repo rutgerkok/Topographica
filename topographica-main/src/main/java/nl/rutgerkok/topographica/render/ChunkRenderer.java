@@ -6,11 +6,11 @@ import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS;
 
 import java.util.Objects;
 
+import nl.rutgerkok.topographica.config.ColorConfig;
+
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Color;
 import org.bukkit.Material;
-
-import nl.rutgerkok.topographica.config.ColorConfig;
 
 public class ChunkRenderer {
 

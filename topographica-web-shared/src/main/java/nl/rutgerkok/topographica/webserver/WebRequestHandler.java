@@ -6,8 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.logging.Level;
-
-import org.bukkit.plugin.Plugin;
+import java.util.logging.Logger;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -17,19 +16,19 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import nl.rutgerkok.topographica.config.WebConfig;
-import nl.rutgerkok.topographica.config.WebPaths;
 
 final class WebRequestHandler {
 
     private static final String IMAGES_URL = "/" + WebPaths.IMAGES + "/";
 
-    private final Plugin plugin;
-    private final WebConfig webConfig;
+    private final BundledFiles bundledFiles;
+    private final Logger logger;
+    private final WebConfigInterface webConfig;
 
-    WebRequestHandler(Plugin plugin, WebConfig webConfig) {
-        this.plugin = Objects.requireNonNull(plugin);
-        this.webConfig = Objects.requireNonNull(webConfig);
+    WebRequestHandler(BundledFiles files, WebConfigInterface webConfig, Logger logger) {
+        this.bundledFiles = Objects.requireNonNull(files, "files");
+        this.webConfig = Objects.requireNonNull(webConfig, "webConfig");
+        this.logger = Objects.requireNonNull(logger, "logger");
     }
 
     private String getMime(String fileName) {
@@ -53,7 +52,7 @@ final class WebRequestHandler {
 
             return sendFromJarFile(toFile(uri), HttpResponseStatus.OK);
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Error handling web request to " + request.uri(), e);
+            logger.log(Level.SEVERE, "Error handling web request to " + request.uri(), e);
             return send500();
         }
     }
@@ -68,7 +67,7 @@ final class WebRequestHandler {
 
     private FullHttpResponse sendFromJarFile(String file, HttpResponseStatus code) throws IOException {
         ByteBuf buffer = Unpooled.buffer();
-        try (InputStream stream = plugin.getResource("web/" + file)) {
+        try (InputStream stream = bundledFiles.getResource("web/" + file)) {
             if (stream == null) {
                 if (file.equals("404.html")) {
                     // Protect against infinite loop

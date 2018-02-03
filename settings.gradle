@@ -1,2 +1,4 @@
+include 'topographica-web-shared'
+include 'topographica-web-standalone'
 include 'topographica-main'
 include 'topographica-modern'
