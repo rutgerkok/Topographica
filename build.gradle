@@ -58,7 +58,7 @@ subprojects {
 
 }
 
-// Web server (library)
+// Web server (library, used by plugin and by standalone web server)
 project(':topographica-web-shared') {
 	dependencies {
         compileOnly 'com.google.guava:guava:18.0'
@@ -89,7 +89,7 @@ project(':topographica-web-standalone') {
 }
 
 // Spigot plugin (main)
-project(':topographica-main') {
+project(':topographica-spigot-main') {
     dependencies {
         compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
         compile project(':topographica-web-shared')
@@ -106,7 +106,7 @@ project(':topographica-main') {
 }
 
 // Spigot plugin (extra classes that require modern Spigot versions)
-project(':topographica-modern') {
+project(':topographica-spigot-modern') {
 
     apply plugin: 'com.github.johnrengelman.shadow'
 
@@ -116,7 +116,7 @@ project(':topographica-modern') {
 
     dependencies {
         compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
-        compile project(':topographica-main')
+        compile project(':topographica-spigot-main')
     }
 
     shadowJar {
