@@ -115,7 +115,7 @@ project(':topographica-spigot-modern') {
 	}
 
     dependencies {
-        compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
+        compileOnly 'org.bukkit:bukkit:18w03b-R0.1-SNAPSHOT'
         compile project(':topographica-spigot-main')
     }
 

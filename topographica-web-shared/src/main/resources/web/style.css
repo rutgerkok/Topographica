@@ -14,17 +14,22 @@ body {
 	height: 3rem;
 	right: 0;
 }
+#map__header h1 {
+	font-size: 1rem;
+	line-height: 3rem;
+	padding: 0 0.5em;
+}
+@media (min-width: 50rem) {
+	#map__header h1 {
+		font-size: 1.5rem;
+	}
+}
 #map__area {
 	position: absolute;
 	left: 0;
 	top: 3rem;
 	bottom: 0;
 	right: 0;
-}
-h1 {
-	font-size: 1.5rem;
-	line-height: 3rem;
-	padding: 0 0.5em;
 }
 
 /* Leaflet styles */

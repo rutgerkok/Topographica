@@ -2,6 +2,7 @@
 .gradle/
 build/
 Topographica.jar
+Topographica-Webserver.jar
 
 # Eclispe files
 .project
@@ -9,3 +10,6 @@ Topographica.jar
 .settings/
 bin/
 
+# Log files from web serer
+*.log
+*.log.lck
