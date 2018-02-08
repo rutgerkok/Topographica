@@ -1,7 +1,10 @@
 package nl.rutgerkok.topographica.webserver;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -20,15 +23,39 @@ import io.netty.handler.codec.http.HttpVersion;
 final class WebRequestHandler {
 
     private static final String IMAGES_URL = "/" + WebPaths.IMAGES + "/";
+    private static final byte[] NEW_LINE = new byte[] { '\r', '\n' };
 
     private final BundledFiles bundledFiles;
     private final Logger logger;
-    private final WebConfigInterface webConfig;
+    private final ServerInfo serverInfo;
 
-    WebRequestHandler(BundledFiles files, WebConfigInterface webConfig, Logger logger) {
+    WebRequestHandler(BundledFiles files, ServerInfo serverInfo, Logger logger) {
         this.bundledFiles = Objects.requireNonNull(files, "files");
-        this.webConfig = Objects.requireNonNull(webConfig, "webConfig");
+        this.serverInfo = Objects.requireNonNull(serverInfo, "serverInfo");
         this.logger = Objects.requireNonNull(logger, "logger");
+    }
+
+    private String doSmartReplacements(String line, WebWorld currentWorld) {
+        String trimmedLine = line.trim();
+        switch (trimmedLine) {
+            case "$WORLD_LIST$":
+                StringBuffer buffer = new StringBuffer("");
+                for (WebWorld world : serverInfo.getWorlds()) {
+                    buffer.append("<li><a href=\"/?world=");
+                    buffer.append(Escape.forQueryParam(world.getFolderName()));
+                    buffer.append('"');
+                    if (world.equals(currentWorld)) {
+                        buffer.append(" class=\"current\"");
+                    }
+                    buffer.append('>');
+                    buffer.append(Escape.forHtml(world.getDisplayName()));
+                    buffer.append("</a></li>\r\n");
+                }
+                return buffer.toString();
+            case "var worldFolderName = \"MAGIC\";":
+                return "var worldFolderName = '" + Escape.forQueryParam(currentWorld.getFolderName()) + "';";
+        }
+        return line;
     }
 
     private String getMime(String fileName) {
@@ -41,15 +68,43 @@ final class WebRequestHandler {
         throw new UnsupportedOperationException("Unkown MIME: " + fileName);
     }
 
+    private WebWorld getWorldFromQuery(String uri) {
+        WebWorld world = null;
+
+        String query = "";
+        int questionMarkIndex = uri.indexOf('?');
+        if (questionMarkIndex != -1) {
+            query = uri.substring(questionMarkIndex + 1);
+        }
+        int worldNameIndex = query.indexOf("world=");
+        if (worldNameIndex != -1) {
+            String worldName = query.substring(worldNameIndex + "world=".length());
+            int ampersandIndex = worldName.indexOf('&');
+            if (ampersandIndex != -1) {
+                worldName = worldName.substring(0, ampersandIndex);
+            }
+            world = this.serverInfo.getWorld(worldName);
+        }
+
+        if (world == null) {
+            world = this.serverInfo.getWorlds().iterator().next();
+        }
+        return world;
+    }
+
     public FullHttpResponse respond(FullHttpRequest request) throws IOException {
         try {
             String uri = request.uri();
 
             // Images must be sent from a folder, not from the JAR file
             if (uri.startsWith(IMAGES_URL)) {
-                return sendImage(uri.substring(IMAGES_URL.length()));
+                return sendMapImage(uri.substring(IMAGES_URL.length()));
             }
 
+            String file = toFile(uri);
+            if (file.equals("index.html")) {
+                return sendHomePage(getWorldFromQuery(uri));
+            }
             return sendFromJarFile(toFile(uri), HttpResponseStatus.OK);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error handling web request to " + request.uri(), e);
@@ -86,9 +141,32 @@ final class WebRequestHandler {
         return response;
     }
 
-    private FullHttpResponse sendImage(String image) throws IOException {
+    private FullHttpResponse sendHomePage(WebWorld world) throws IOException {
+        ByteBuf buffer = Unpooled.buffer();
+        try (InputStream stream = bundledFiles.getResource("web/index.html")) {
+            if (stream == null) {
+                return send404();
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = doSmartReplacements(line, world);
+                buffer.writeBytes(line.getBytes(StandardCharsets.UTF_8));
+                buffer.writeBytes(NEW_LINE);
+            }
+        }
+
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buffer);
+
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, getMime("index.html"));
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.writerIndex());
+
+        return response;
+    }
+
+    private FullHttpResponse sendMapImage(String image) throws IOException {
         // Get image
-        Path imagesFolder = webConfig.getImagesFolder();
+        Path imagesFolder = serverInfo.getImagesFolder();
         Path path = imagesFolder.resolve(image).normalize();
         if (!path.startsWith(imagesFolder) || !Files.exists(path)) {
             return send404();

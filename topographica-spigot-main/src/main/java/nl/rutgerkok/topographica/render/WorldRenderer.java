@@ -11,6 +11,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bukkit.World;
+
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.render.RegionRenderer.DrawnRegion;
@@ -20,8 +22,7 @@ import nl.rutgerkok.topographica.scheduler.TGRunnable;
 import nl.rutgerkok.topographica.scheduler.TGRunnable.Type;
 import nl.rutgerkok.topographica.util.LongArrayList;
 import nl.rutgerkok.topographica.util.LongArrayList.LongQueue;
-
-import org.bukkit.World;
+import nl.rutgerkok.topographica.webserver.IntPair;
 
 public class WorldRenderer extends ComputationFactory<LongQueue, DrawnRegion> {
 
@@ -87,10 +88,10 @@ public class WorldRenderer extends ComputationFactory<LongQueue, DrawnRegion> {
                         if (!matcher.matches()) {
                             continue;
                         }
-                        long regionX = Integer.parseInt(matcher.group(1)) & 0x00000000ffffffffL;
-                        long regionZ = Integer.parseInt(matcher.group(2)) & 0x00000000ffffffffL;
-                        if (worldConfig.shouldRender((int) regionX, (int) regionZ)) {
-                            regions.add((regionX << Integer.SIZE) | regionZ);
+                        int regionX = Integer.parseInt(matcher.group(1));
+                        int regionZ = Integer.parseInt(matcher.group(2));
+                        if (worldConfig.shouldRender(regionX, regionZ)) {
+                            regions.add(IntPair.toLong(regionX, regionZ));
                         }
 
                         // Check for cancels
@@ -111,8 +112,8 @@ public class WorldRenderer extends ComputationFactory<LongQueue, DrawnRegion> {
         long regionLocation = regionQueue.getNext();
 
         // Create task for next region
-        int regionX = (int) (regionLocation >>> Integer.SIZE);
-        int regionZ = (int) regionLocation;
+        int regionX = IntPair.getX(regionLocation);
+        int regionZ = IntPair.getZ(regionLocation);
 
         Canvas image = grabImage();
         RegionRenderer renderer = new RegionRenderer(worldConfig, world, regionX, regionZ);

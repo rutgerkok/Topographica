@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import nl.rutgerkok.topographica.util.StartupLog;
-
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
@@ -18,6 +16,8 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class Config {
 
@@ -37,18 +37,8 @@ public final class Config {
         this.webConfig = new WebConfig(config.getConfigurationSection("web-server"), dataFolder, log);
     }
 
-    private void setAsDefaults(ConfigurationSection defaults, ConfigurationSection addTo) {
-        for (Entry<String, Object> value : defaults.getValues(true).entrySet()) {
-            addTo.addDefault(value.getKey(), value.getValue());
-        }
-    }
-
     public WorldConfig getConfig(World world) {
-        WorldConfig result = configsByWorld.get(world.getName().toLowerCase(Locale.ROOT));
-        if (result == null) {
-            return configsByWorld.get("default");
-        }
-        return result;
+        return getWorldConfig(world.getName());
     }
 
     /**
@@ -69,13 +59,29 @@ public final class Config {
         return 1;
     }
 
+    /**
+     * Gets the configs for the given world, or the default if there are no
+     * settings for this world.
+     * 
+     * @param worldName
+     *            Name of the world. ({@link World#getName()})
+     * @return The world config.
+     */
+    public WorldConfig getWorldConfig(String worldName) {
+        WorldConfig result = configsByWorld.get(worldName.toLowerCase(Locale.ROOT));
+        if (result == null) {
+            return configsByWorld.get("default");
+        }
+        return result;
+    }
+
     private Map<String, WorldConfig> getWorldConfigs(Server server, FileConfiguration config, StartupLog log) {
         Map<String, WorldConfig> configsByWorld = new HashMap<>();
 
         // Put some default values
         World defaultWorld = server.getWorlds().get(0);
         ConfigurationSection defaultWorldSection = config.getConfigurationSection("worlds.default");
-        WorldConfig defaultWorldConfig = new WorldConfig(defaultWorld, defaultWorldSection, log);
+        WorldConfig defaultWorldConfig = new WorldConfig(defaultWorld, "default", defaultWorldSection, log);
         configsByWorld.put("default", defaultWorldConfig);
         // Let other worlds use updated defaults:
         defaultWorldConfig.write(defaultWorldSection);
@@ -101,7 +107,8 @@ public final class Config {
             World world = MoreObjects.firstNonNull(server.getWorld(worldName), defaultWorld);
             setAsDefaults(defaultWorldSection, worldSection);
 
-            configsByWorld.put(worldName.toLowerCase(Locale.ROOT), new WorldConfig(world, worldSection, log));
+            configsByWorld.put(worldName.toLowerCase(Locale.ROOT),
+                    new WorldConfig(world, worldName, worldSection, log));
         }
 
         return ImmutableMap.copyOf(configsByWorld);
@@ -114,6 +121,12 @@ public final class Config {
             }
         }
 
+    }
+
+    private void setAsDefaults(ConfigurationSection defaults, ConfigurationSection addTo) {
+        for (Entry<String, Object> value : defaults.getValues(true).entrySet()) {
+            addTo.addDefault(value.getKey(), value.getValue());
+        }
     }
 
     private void wipeConfig(FileConfiguration to) {

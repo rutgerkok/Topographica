@@ -35,12 +35,12 @@ public final class WebServer {
     private final EventLoopGroup slaveGroup;
     private final WebRequestHandler requestHandler;
 
-    public WebServer(BundledFiles files, WebConfigInterface webConfig, Logger logger) throws BindException {
+    public WebServer(BundledFiles files, ServerInfo serverInfo, Logger logger) throws BindException {
         masterGroup = new NioEventLoopGroup();
         slaveGroup = new NioEventLoopGroup();
-        requestHandler = new WebRequestHandler(files, webConfig, logger);
+        requestHandler = new WebRequestHandler(files, serverInfo, logger);
 
-        enable(webConfig);
+        enable(serverInfo);
     }
 
     public void disable() {
@@ -55,7 +55,7 @@ public final class WebServer {
         }
     }
 
-    private void enable(WebConfigInterface config) throws BindException {
+    private void enable(ServerInfo serverInfo) throws BindException {
 
         try {
             final ServerBootstrap bootstrap = new ServerBootstrap()
@@ -108,7 +108,7 @@ public final class WebServer {
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
-            channel = bootstrap.bind(config.getPort()).sync();
+            channel = bootstrap.bind(serverInfo.getPort()).sync();
         } catch (InterruptedException e) {
         }
     }

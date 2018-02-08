@@ -3,27 +3,31 @@ package nl.rutgerkok.topographica.config;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS_BITS;
 
-import nl.rutgerkok.topographica.util.StartupLog;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
+import nl.rutgerkok.topographica.util.StartupLog;
+
 public final class WorldConfig {
+
+    static final String DEFAULT_WORLD = "default";
 
     private final int centerX;
     private final int centerZ;
     private final long radius;
     private final long radiusSquared;
     private final ColorConfig colorConfig;
+    private final String displayName;
 
-    WorldConfig(World world, ConfigurationSection config, StartupLog log) {
-        Location spawn = world.getSpawnLocation();
+    WorldConfig(World copyDefaults, String worldName, ConfigurationSection config, StartupLog log) {
+        displayName = config.getString("display-name", worldName);
+        Location spawn = copyDefaults.getSpawnLocation();
         centerX = config.getInt("center-x", spawn.getBlockX());
         centerZ = config.getInt("center-z", spawn.getBlockZ());
         int radius = config.getInt("radius");
         if (radius < REGION_SIZE_BLOCKS && radius != 0) {
-            log.warn("The radius " + radius + " in world " + world.getName() + " was too small. Changed it to "
+            log.warn("The radius " + radius + " in world '" + worldName + "' was too small. Changed it to "
                     + REGION_SIZE_BLOCKS);
             radius = REGION_SIZE_BLOCKS;
         }
@@ -39,6 +43,15 @@ public final class WorldConfig {
      */
     public ColorConfig getColors() {
         return colorConfig;
+    }
+
+    /**
+     * Gets the name of this world, displayed to users.
+     * 
+     * @return The name.
+     */
+    public String getDisplayName() {
+        return displayName;
     }
 
     /**
@@ -66,6 +79,9 @@ public final class WorldConfig {
     }
 
     void write(ConfigurationSection section) {
+        if (!displayName.equals(DEFAULT_WORLD)) {
+            section.set("display-name", displayName);
+        }
         section.set("center-x", centerX);
         section.set("center-z", centerZ);
         section.set("radius", radius);

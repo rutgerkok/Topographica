@@ -1,4 +1,4 @@
-html, body, div, header, h1 {
+html, body, div, header, nav, h1 {
 	margin: 0;
 	padding: 0;
 }
@@ -7,23 +7,68 @@ body {
 	color: #eee;
 	font-family: Tahoma, sans-serif;
 }
+
+a {
+	color: lime;
+}
+
+
+/* Header */
 #map__header {
 	position: absolute;
 	left: 0;
 	top: 0;
-	height: 3rem;
 	right: 0;
+	height: 3rem;
+	overflow: hidden;
 }
-#map__header h1 {
+#map__header nav {
+	overflow-x: scroll;
+	-webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+#map__header ul {
+	height: 100%;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	white-space: nowrap;
+}
+#map__header li {
+	display: inline-block;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+#map__header a {
+	display: block;
+	height: 1.65rem;
+	margin: 0;
+	padding: 1.1rem 1rem 0 1rem;
+	border-bottom: 0.25rem solid transparent;
+	text-decoration: none;
+}
+#map__header a.current, #map__header a:hover {
+	border-color: lime;
+}
+#map__header a:hover {
+	color: rgb(200, 255, 200);
+	border-color: rgb(200, 255, 200);
+}
+#map__header a.site_title {
+	color: inherit;
 	font-size: 1rem;
 	line-height: 3rem;
 	padding: 0 0.5em;
+	height: 3rem;
+	border: none;
 }
 @media (min-width: 50rem) {
-	#map__header h1 {
+	#map__header a.site_title {
 		font-size: 1.5rem;
 	}
 }
+
+/* Map */
 #map__area {
 	position: absolute;
 	left: 0;
@@ -31,8 +76,6 @@ body {
 	bottom: 0;
 	right: 0;
 }
-
-/* Leaflet styles */
 .leaflet-container {
     background: black;
 }

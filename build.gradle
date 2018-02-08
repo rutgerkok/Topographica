@@ -55,6 +55,10 @@ subprojects {
             "DATE": new Date().format('yyyy-MM-dd')
         ]
     }
+    
+    dependencies {
+    	  testCompile 'junit:junit:4.12'
+    }
 
 }
 
@@ -62,6 +66,7 @@ subprojects {
 project(':topographica-web-shared') {
 	dependencies {
         compileOnly 'com.google.guava:guava:18.0'
+        testCompile 'com.google.guava:guava:18.0'
         compileOnly 'io.netty:netty-all:4.1.19.Final'
     }
 }

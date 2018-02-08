@@ -4,10 +4,9 @@ import java.net.BindException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.logging.Logger;
 
-public class Main implements WebConfigInterface {
+public final class Main {
 
     public static void main(String... args) {
         int port = 8088;
@@ -36,34 +35,20 @@ public class Main implements WebConfigInterface {
         new Main(imagesFolder, port);
     }
 
-    private final int port;
-    private final Path imagesFolder;
     private final WebServer webServer;
 
     public Main(Path imagesFolder, int port) {
-        this.imagesFolder = Objects.requireNonNull(imagesFolder, "imagesFolder");
-        this.port = port;
-        this.webServer = startWebServer();
+        this.webServer = startWebServer(imagesFolder, port);
 
         new Console(webServer).start();
     }
 
-    @Override
-    public Path getImagesFolder() {
-        return imagesFolder;
-    }
-
-    @Override
-    public int getPort() {
-        return port;
-    }
-
-    private WebServer startWebServer() {
+    private WebServer startWebServer(Path imagesFolder, int port) {
         Logger logger = ServerLogger.setup(WebServer.class);
         try {
-            return new WebServer(new JarOrResourceFileRetriever(), this, logger);
+            return new WebServer(new JarOrResourceFileRetriever(), new LastKnownServerInfo(imagesFolder, port), logger);
         } catch (BindException e) {
-            logger.severe("Failed to bind to port " + this.port);
+            logger.severe("Failed to bind to port " + port);
             System.exit(1);
             return null;
         }

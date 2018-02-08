@@ -2,13 +2,6 @@ package nl.rutgerkok.topographica;
 
 import java.net.BindException;
 
-import nl.rutgerkok.topographica.config.Config;
-import nl.rutgerkok.topographica.config.WebConfig;
-import nl.rutgerkok.topographica.render.WorldRenderer;
-import nl.rutgerkok.topographica.scheduler.Scheduler;
-import nl.rutgerkok.topographica.util.StartupLog;
-import nl.rutgerkok.topographica.webserver.WebServer;
-
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.bukkit.World;
@@ -18,6 +11,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import nl.rutgerkok.topographica.config.Config;
+import nl.rutgerkok.topographica.render.WorldRenderer;
+import nl.rutgerkok.topographica.scheduler.Scheduler;
+import nl.rutgerkok.topographica.util.StartupLog;
+import nl.rutgerkok.topographica.webserver.WebServer;
+
 public class Topographica extends JavaPlugin {
 
     private WebServer webServer;
@@ -25,14 +24,13 @@ public class Topographica extends JavaPlugin {
     private Config config;
 
     private WebServer enableWebServer(StartupLog startupLog) {
-        WebConfig config = this.config.getWebConfig();
-        if (!config.isInternalServerEnabled()) {
+        if (!config.getWebConfig().isInternalServerEnabled()) {
             return null;
         }
         try {
-            return new WebServer(new PluginBundledFiles(this), config, this.getLogger());
+            return new WebServer(new PluginBundledFiles(this), new LiveServerInfo(this, config), this.getLogger());
         } catch (BindException e) {
-            startupLog.severe("**** FAILED TO BIND TO PORT **** \nPort " + config.getPort()
+            startupLog.severe("**** FAILED TO BIND TO PORT **** \nPort " + config.getWebConfig().getPort()
                     + " is already in use. The map will not function.");
             return null;
         }

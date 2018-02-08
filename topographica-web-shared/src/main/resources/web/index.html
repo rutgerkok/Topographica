@@ -16,15 +16,21 @@
 	</head>
 	<body>
 		<header id="map__header">
-			<h1>@PROJECT_NAME@</h1>
+			<nav>
+				<ul>
+					<li><a class="site_title" href="/">@PROJECT_NAME</a></li>
+					$WORLD_LIST$
+				</ul>
+			</nav>
 		</header>
 		<div id="map__area"></div>
 		<script>
+			var worldFolderName = "MAGIC";
 			var map = L.map('map__area', {
 				crs: L.CRS.Simple,
 				zoomControl: false
 			}).setView([0, 0], 1);
-	        L.tileLayer('/images/world/r.{x}.{y}.jpg', {
+	        L.tileLayer('/images/' + worldFolderName + '/r.{x}.{y}.jpg', {
 	            minZoom: 1,
 	            maxZoom: 1,
 	            attribution: '@PROJECT_NAME@',

@@ -4,13 +4,12 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.util.StartupLog;
-import nl.rutgerkok.topographica.webserver.WebConfigInterface;
-import nl.rutgerkok.topographica.webserver.WebPaths;
-
 import org.bukkit.configuration.ConfigurationSection;
 
-public final class WebConfig implements WebConfigInterface {
+import nl.rutgerkok.topographica.util.StartupLog;
+import nl.rutgerkok.topographica.webserver.WebPaths;
+
+public final class WebConfig {
 
     private final int port;
     private final String webFolder;
@@ -36,7 +35,6 @@ public final class WebConfig implements WebConfigInterface {
      *
      * @return The image path.
      */
-    @Override
     public Path getImagesFolder() {
         return getWebFolder().resolve(WebPaths.IMAGES);
     }
@@ -46,7 +44,6 @@ public final class WebConfig implements WebConfigInterface {
      *
      * @return The port.
      */
-    @Override
     public int getPort() {
         return port;
     }
