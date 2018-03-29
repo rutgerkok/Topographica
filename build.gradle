@@ -68,6 +68,7 @@ project(':topographica-web-shared') {
         compileOnly 'com.google.guava:guava:18.0'
         testCompile 'com.google.guava:guava:18.0'
         compileOnly 'io.netty:netty-all:4.1.19.Final'
+        compileOnly 'com.googlecode.json-simple:json-simple:1.1.1'
     }
 }
 
@@ -78,6 +79,7 @@ project(':topographica-web-standalone') {
 	dependencies { // Must be included in JAR file
         compile 'com.google.guava:guava:18.0'
         compile 'io.netty:netty-all:4.1.19.Final'
+        compile 'com.googlecode.json-simple:json-simple:1.1.1'
         compile project(':topographica-web-shared')
     }
     
@@ -128,6 +130,7 @@ project(':topographica-spigot-modern') {
         dependencies {
             exclude(dependency('com.google.guava:guava'))
             exclude(dependency('io.netty:netty-all'))
+            exclude(dependency('com.googlecode.json-simple:json-simple'))
         }
         destinationDir = file("$rootDir")
         archiveName = "Topographica.${extension}"

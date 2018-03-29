@@ -4,14 +4,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.collect.ImmutableMap;
+
+import org.json.simple.JSONArray;
+
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -65,6 +76,9 @@ final class WebRequestHandler {
         if (fileName.endsWith(".css")) {
             return "text/css";
         }
+        if (fileName.endsWith(".js")) {
+            return "text/javascript";
+        }
         throw new UnsupportedOperationException("Unkown MIME: " + fileName);
     }
 
@@ -92,6 +106,23 @@ final class WebRequestHandler {
         return world;
     }
 
+    private FullHttpResponse jsonResponse(List<?> output) throws IOException {
+        ByteBuf buffer = Unpooled.buffer();
+
+        try (Writer writer = new OutputStreamWriter(new ByteBufOutputStream(buffer), StandardCharsets.UTF_8)) {
+            JSONArray.writeJSONString(output, writer);
+        }
+
+        FullHttpResponse response = new DefaultFullHttpResponse(
+                HttpVersion.HTTP_1_1,
+                HttpResponseStatus.OK,
+                buffer);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8");
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.writerIndex());
+
+        return response;
+    }
+
     public FullHttpResponse respond(FullHttpRequest request) throws IOException {
         try {
             String uri = request.uri();
@@ -101,11 +132,14 @@ final class WebRequestHandler {
                 return sendMapImage(uri.substring(IMAGES_URL.length()));
             }
 
-            String file = toFile(uri);
-            if (file.equals("index.html")) {
-                return sendHomePage(getWorldFromQuery(uri));
+            switch (toFile(uri)) {
+                case "index.html":
+                    return sendHomePage(getWorldFromQuery(uri));
+                case "players.json":
+                    return sendPlayerList(getWorldFromQuery(uri));
+                default:
+                    return sendFromJarFile(toFile(uri), HttpResponseStatus.OK);
             }
-            return sendFromJarFile(toFile(uri), HttpResponseStatus.OK);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error handling web request to " + request.uri(), e);
             return send500();
@@ -184,6 +218,18 @@ final class WebRequestHandler {
 
             return response;
         }
+    }
+
+    private FullHttpResponse sendPlayerList(WebWorld world) throws IOException {
+        Collection<? extends WebPlayer> players = this.serverInfo.getPlayers(world);
+        List<Map<?, ?>> output = new ArrayList<>();
+        for (WebPlayer player : players) {
+            long position = player.getPosition();
+            output.add(ImmutableMap.of("name", player.getDisplayName(),
+                    "x", IntPair.getX(position),
+                    "z", IntPair.getZ(position)));
+        }
+        return jsonResponse(output);
     }
 
     private ByteBuf toBuffer(InputStream stream) throws IOException {
