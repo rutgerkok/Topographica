@@ -19,12 +19,14 @@ public final class WorldConfig {
     private final long radiusSquared;
     private final ColorConfig colorConfig;
     private final String displayName;
+    private final int maxChunkLoadTimeNSPT;
 
     WorldConfig(World copyDefaults, String worldName, ConfigurationSection config, StartupLog log) {
         displayName = config.getString("display-name", worldName);
         Location spawn = copyDefaults.getSpawnLocation();
         centerX = config.getInt("center-x", spawn.getBlockX());
         centerZ = config.getInt("center-z", spawn.getBlockZ());
+        maxChunkLoadTimeNSPT = config.getInt("max-blocking-time-nanoseconds-per-tick");
         int radius = config.getInt("radius");
         if (radius < REGION_SIZE_BLOCKS && radius != 0) {
             log.warn("The radius " + radius + " in world '" + worldName + "' was too small. Changed it to "
@@ -52,6 +54,16 @@ public final class WorldConfig {
      */
     public String getDisplayName() {
         return displayName;
+    }
+
+    /**
+     * The amount of nanoseconds that may be spent reading chunks on the main
+     * thread in each tick.
+     *
+     * @return The amount of nanoseconds.
+     */
+    public int getMaxChunkLoadTimeNSPT() {
+        return maxChunkLoadTimeNSPT;
     }
 
     /**
@@ -85,6 +97,7 @@ public final class WorldConfig {
         section.set("center-x", centerX);
         section.set("center-z", centerZ);
         section.set("radius", radius);
+        section.set("max-blocking-time-nanoseconds-per-tick", maxChunkLoadTimeNSPT);
         colorConfig.write(section.createSection("colors"));
     }
 }

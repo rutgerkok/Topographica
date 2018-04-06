@@ -51,15 +51,6 @@ public final class Config {
     }
 
     /**
-     * The amount of worker rendering on the server.
-     *
-     * @return The amount of workers.
-     */
-    public int getWorkers() {
-        return 1;
-    }
-
-    /**
      * Gets the configs for the given world, or the default if there are no
      * settings for this world.
      * 

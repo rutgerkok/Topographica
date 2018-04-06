@@ -8,13 +8,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import nl.rutgerkok.topographica.config.WorldConfig;
-import nl.rutgerkok.topographica.scheduler.Computation;
-import nl.rutgerkok.topographica.scheduler.TGRunnable;
-
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
+
+import nl.rutgerkok.topographica.config.WorldConfig;
+import nl.rutgerkok.topographica.scheduler.Computation;
+import nl.rutgerkok.topographica.scheduler.TGRunnable;
 
 public final class RegionRenderer {
 
@@ -92,6 +92,13 @@ public final class RegionRenderer {
         private int chunkXInRegion = 0;
         private int chunkZInRegion = 0;
 
+        /**
+         * If a the code in a tick ran for too long, this variable is set to the
+         * amount of nanoseconds that the code ran for too long. The max run
+         * time of the next tick is then decremented by this amount.
+         */
+        private long overBudgetNs = 0;
+
         public SyncPart() {
             super(Type.EVERY_TICK, "Chunk loader");
         }
@@ -134,16 +141,18 @@ public final class RegionRenderer {
 
         @Override
         public void run() {
-            if (renderQueue.size() > 1) {
-                // Queue is too full
-                return;
-            }
-            for (int i = 0; i < 2; i++) {
+            long startTime = System.nanoTime();
+            long endTime = startTime + maxNsPerTick - overBudgetNs;
+            long currentTime = startTime;
+            // Load as many chunks as possible
+            while (renderQueue.size() < 100 && currentTime - endTime <= 0) {
                 offer();
                 if (!next()) {
-                    return;
+                    return; // The full computation is finished
                 }
+                currentTime = System.nanoTime();
             }
+            overBudgetNs = currentTime - endTime;
         }
 
     }
@@ -152,11 +161,12 @@ public final class RegionRenderer {
     private final int regionX;
     private final int regionZ;
     private final BlockingQueue<ChunkTask> renderQueue = new LinkedBlockingQueue<>();
-
+    private final int maxNsPerTick;
     private final ChunkRenderer chunkRenderer;
 
     public RegionRenderer(WorldConfig worldConfig, World world, int regionX, int regionZ) {
         this.chunkRenderer = ChunkRenderer.create(worldConfig.getColors());
+        this.maxNsPerTick = worldConfig.getMaxChunkLoadTimeNSPT();
         this.world = Objects.requireNonNull(world, "world");
         this.regionX = regionX;
         this.regionZ = regionZ;

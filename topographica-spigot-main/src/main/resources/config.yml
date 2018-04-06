@@ -1,6 +1,6 @@
 # Configuration file of @PROJECT_NAME@ v@VERSION@ (@DATE@)
 # 
-# EXPLANTATION OF THE SETTINGS
+# EXPLANATION OF THE SETTINGS
 # ... scroll down for the actual settings ...
 # 
 # web-server:
@@ -17,14 +17,17 @@
 #     any writeable directory.
 # 
 # worlds:
-#   Here each world can be configured. The world named "default"
-#   is used for all worlds that do not have their own settings.
-#   The most important setting is the radius. The radius is set
-#   in blocks, and controls how much of the world is rendered
-#   around the center. A radius of 0 disables the map for that world.
+#   Here each world can be configured. The world named "default" is used for all
+#   worlds that do not have their own settings. The most important setting is
+#   the radius. The radius is set in blocks, and controls how much of the world
+#   is rendered around the center. A radius of 0 disables the map for that world.
 # 
-# 
-# 
+#   The setting max-blocking-time-nanoseconds-per-tick specifies for how long 
+#   the plugin may block the whole server (in technical terms: run on the main
+#   thread). The default value is 1 ms = 1000000 ns. A tick normally takes up to
+#   50 ms, so there is still at least 49 ms available for all other processes on
+#   the server. Increase this value to increase map rendering speed.
+#
 # ACTUAL SETTINGS BELOW
 web-server:
   port: 8088
@@ -32,6 +35,7 @@ web-server:
 worlds:
   default:
     radius: 2147483647
+    max-blocking-time-nanoseconds-per-tick: 1000000
     colors:
       AIR: '#000000'
       STONE: '#808080'
