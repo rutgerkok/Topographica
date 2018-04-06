@@ -9,7 +9,7 @@ function setupMap(id) {
 	    crs: L.CRS.Simple,
 	    zoomControl: false
 	}).setView([0, 0], -1);
-	L.tileLayer('/images/' + worldFolderName + '/r.{x}.{y}.jpg', {
+	L.tileLayer('/images/' + worldFolderName + '/zoom{z}/r.{x}.{y}.jpg', {
 	    minZoom: -1,
 	    maxZoom: -1,
 	    attribution: '@PROJECT_NAME@',

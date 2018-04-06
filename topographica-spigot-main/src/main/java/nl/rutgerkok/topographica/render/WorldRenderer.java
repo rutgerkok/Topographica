@@ -65,7 +65,7 @@ public class WorldRenderer extends ComputationFactory<LongQueue, DrawnRegion> {
 
     @Override
     public void handleResult(DrawnRegion image) throws IOException {
-        Path file = this.imageFolder.resolve("r." + image.regionX + "." + image.regionZ + ".jpg");
+        Path file = this.imageFolder.resolve("zoom-1").resolve("r." + image.regionX + "." + image.regionZ + ".jpg");
 
         image.canvas.outputAndReset(file);
         unusedCanvases.add(image.canvas);
