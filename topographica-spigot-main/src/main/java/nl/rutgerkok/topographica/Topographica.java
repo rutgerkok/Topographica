@@ -1,21 +1,16 @@
 package nl.rutgerkok.topographica;
 
 import java.net.BindException;
-import java.util.Collection;
+import java.util.Locale;
 
-import org.bukkit.World;
-import org.bukkit.command.BlockCommandSender;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import nl.rutgerkok.topographica.command.CommandHandler;
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.render.ServerRenderer;
-import nl.rutgerkok.topographica.render.WorldRenderer;
 import nl.rutgerkok.topographica.scheduler.Scheduler;
 import nl.rutgerkok.topographica.util.StartupLog;
 import nl.rutgerkok.topographica.webserver.WebServer;
+
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class Topographica extends JavaPlugin {
 
@@ -37,49 +32,12 @@ public class Topographica extends JavaPlugin {
         }
     }
 
-    private World getWorld(CommandSender sender) {
-        if (sender instanceof Entity) {
-            return ((Entity) sender).getWorld();
-        }
-        if (sender instanceof BlockCommandSender) {
-            return ((BlockCommandSender) sender).getBlock().getWorld();
-        }
-        return getServer().getWorlds().get(0);
-    }
-
     private Config loadConfigs(StartupLog startupLog) {
         saveDefaultConfig();
         Config config = new Config(getServer(), getConfig(), getDataFolder().toPath(), startupLog);
         config.write(getConfig());
         saveConfig();
         return config;
-    }
-
-    @Override
-    public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
-        if (args.length != 1) {
-            return false;
-        }
-        switch (args[0]) {
-            case "fullrender":
-                World world = getWorld(sender);
-                renderer.renderAllRegionsAsync(world);
-                sender.sendMessage("Starting full render of world " + world.getName());
-                return true;
-            case "status":
-                Collection<WorldRenderer> renderers = renderer.getActiveRenderers();
-                sender.sendMessage("Active renderers:");
-                if (renderers.isEmpty()) {
-                    sender.sendMessage("No active renderers.");
-                }
-                for (WorldRenderer renderer : renderers) {
-                    sender.sendMessage("* " + renderer.getWorld().getName() + ": " + renderer.getQueueSize()
-                            + " regions in queue");
-                }
-                return true;
-            default:
-                return false;
-        }
     }
 
     @Override
@@ -99,6 +57,7 @@ public class Topographica extends JavaPlugin {
         renderer = new ServerRenderer(scheduler, config);
 
         new LogToPlayerSender(startupLog, this).sendExistingWarnings().listenForNewPlayers();
+        this.getCommand(this.getName().toLowerCase(Locale.ROOT)).setExecutor(new CommandHandler(renderer));
     }
 
 }
