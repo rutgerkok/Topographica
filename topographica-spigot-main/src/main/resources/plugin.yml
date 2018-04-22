@@ -3,14 +3,12 @@ version: "@VERSION@"
 main: nl.rutgerkok.topographica.Topographica
 author: Rutger Kok
 permissions:
-  cartographica.render:
-    description: "Map rendering."
-    default: op
-  cartographica.admin:
+  "@PROJECT_SLUG@.admin":
     description: "Change @PROJECT_NAME@ settings."
     default: op
 commands:
-  render:
-    description: "Renders a region."
-    permission: "cartographica.render"
-    usage: "/<command>"
+  "@PROJECT_SLUG@":
+    description: "General management command."
+    permission: "@PROJECT_SLUG@.admin"
+    usage: "/<command> <fullrender/status>"
+  

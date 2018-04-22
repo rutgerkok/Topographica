@@ -1,8 +1,7 @@
 package nl.rutgerkok.topographica;
 
 import java.net.BindException;
-
-import com.google.common.util.concurrent.MoreExecutors;
+import java.util.Collection;
 
 import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
@@ -12,6 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import nl.rutgerkok.topographica.config.Config;
+import nl.rutgerkok.topographica.render.ServerRenderer;
 import nl.rutgerkok.topographica.render.WorldRenderer;
 import nl.rutgerkok.topographica.scheduler.Scheduler;
 import nl.rutgerkok.topographica.util.StartupLog;
@@ -21,6 +21,7 @@ public class Topographica extends JavaPlugin {
 
     private WebServer webServer;
     private Scheduler scheduler;
+    private ServerRenderer renderer;
     private Config config;
 
     private WebServer enableWebServer(StartupLog startupLog) {
@@ -56,17 +57,25 @@ public class Topographica extends JavaPlugin {
 
     @Override
     public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
-        switch (command.getName()) {
-            case "render":
-                final World world = getWorld(sender);
-                scheduler.submitAll(new WorldRenderer(world, config)).addListener(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        sender.sendMessage("Done rendering " + world.getName());
-                    }
-                }, MoreExecutors.directExecutor());
+        if (args.length != 1) {
+            return false;
+        }
+        switch (args[0]) {
+            case "fullrender":
+                World world = getWorld(sender);
+                renderer.renderAllRegionsAsync(world);
                 sender.sendMessage("Starting full render of world " + world.getName());
+                return true;
+            case "status":
+                Collection<WorldRenderer> renderers = renderer.getActiveRenderers();
+                sender.sendMessage("Active renderers:");
+                if (renderers.isEmpty()) {
+                    sender.sendMessage("No active renderers.");
+                }
+                for (WorldRenderer renderer : renderers) {
+                    sender.sendMessage("* " + renderer.getWorld().getName() + ": " + renderer.getQueueSize()
+                            + " regions in queue");
+                }
                 return true;
             default:
                 return false;
@@ -87,6 +96,7 @@ public class Topographica extends JavaPlugin {
         scheduler = new Scheduler(this);
         config = loadConfigs(startupLog);
         webServer = enableWebServer(startupLog);
+        renderer = new ServerRenderer(scheduler, config);
 
         new LogToPlayerSender(startupLog, this).sendExistingWarnings().listenForNewPlayers();
     }

@@ -21,7 +21,7 @@ public final class StartupLog {
 
     /**
      * Gets all messages displayed up until now.
-     * 
+     *
      * @return All messages.
      */
     public List<String> getMessages() {

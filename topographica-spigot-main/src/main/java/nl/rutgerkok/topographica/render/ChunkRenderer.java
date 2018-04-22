@@ -6,11 +6,11 @@ import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS;
 
 import java.util.Objects;
 
+import nl.rutgerkok.topographica.config.ColorConfig;
+
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Color;
 import org.bukkit.Material;
-
-import nl.rutgerkok.topographica.config.ColorConfig;
 
 public class ChunkRenderer {
 
@@ -66,7 +66,7 @@ public class ChunkRenderer {
     /**
      * This method moves the y to the bottom of the sea, so that the sea can be
      * made darker.
-     * 
+     *
      * @param chunk
      *            The chunk.
      * @param x

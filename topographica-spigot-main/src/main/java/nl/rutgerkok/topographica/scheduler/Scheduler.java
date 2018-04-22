@@ -1,15 +1,18 @@
 package nl.rutgerkok.topographica.scheduler;
 
-import java.util.Collections;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import nl.rutgerkok.topographica.util.ConcurrentHashSet;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -20,11 +23,27 @@ import org.bukkit.scheduler.BukkitTask;
  */
 public final class Scheduler {
 
+    /**
+     * Once this is set to true, the {@link #submit(TGRunnable)} method will not
+     * accept new submissions anymore.
+     */
     private volatile boolean stopping = false;
 
-    private final Set<TGRunnable<?>> actives = Collections
-            .newSetFromMap(new ConcurrentHashMap<TGRunnable<?>, Boolean>());
+    private final Set<TGRunnable<?>> activeRunnables = ConcurrentHashSet.create();
+    private final Set<UUID> activeFactories = ConcurrentHashSet.create();
     private final Plugin plugin;
+
+    private Executor asyncExecutor = new Executor() {
+
+        @Override
+        public void execute(Runnable command) {
+            if (plugin.getServer().isPrimaryThread()) {
+                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, command);
+            } else {
+                command.run();
+            }
+        }
+    };
 
     public Scheduler(Plugin plugin) {
         this.plugin = plugin;
@@ -41,17 +60,17 @@ public final class Scheduler {
      * @return A future, to cancel the task or check its completion.
      */
     private <T> ListenableFuture<T> runAsync(final TGRunnable<T> runnable) {
-        actives.add(runnable);
+        activeRunnables.add(runnable);
         Futures.addCallback(runnable.future, new FutureCallback<T>() {
 
             @Override
             public void onFailure(Throwable t) {
-                actives.remove(runnable);
+                activeRunnables.remove(runnable);
             }
 
             @Override
             public void onSuccess(T result) {
-                actives.remove(runnable);
+                activeRunnables.remove(runnable);
             }
         });
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -104,47 +123,17 @@ public final class Scheduler {
 
             @Override
             public void onFailure(Throwable t) {
-                actives.remove(runnable);
+                activeRunnables.remove(runnable);
                 task.cancel(); // Stop repeating the task
             }
 
             @Override
             public void onSuccess(T result) {
-                actives.remove(runnable);
+                activeRunnables.remove(runnable);
                 task.cancel(); // Stop repeating the task
             }
         });
         return runnable.future;
-    }
-
-    private <F, T> void runFactory(final ComputationFactory<F, T> factory, final F seed,
-            final SettableFuture<Void> supervisor) {
-        try {
-            Computation<T> next = factory.next(seed);
-
-            Futures.addCallback(submitComputation(next), new FutureCallback<T>() {
-
-                @Override
-                public void onFailure(Throwable t) {
-                    supervisor.setException(t);
-                }
-
-                @Override
-                public void onSuccess(T result) {
-                    try {
-                        factory.handleResult(result);
-
-                        // On to next computation
-                        runFactory(factory, seed, supervisor);
-                    } catch (Throwable t) {
-                        supervisor.setException(t);
-                    }
-                }
-            });
-        } catch (NoSuchElementException e) {
-            // Done! No more computations.
-            supervisor.set(null);
-        }
     }
 
     /**
@@ -153,7 +142,7 @@ public final class Scheduler {
     public void stopAll() {
         Logger logger = plugin.getLogger();
         stopping = true;
-        for (TGRunnable<?> active : actives) {
+        for (TGRunnable<?> active : activeRunnables) {
             logger.info("Ending task: " + active.name);
             active.future.cancel(true);
         }
@@ -182,30 +171,6 @@ public final class Scheduler {
     }
 
     /**
-     * Submits all tasks.
-     *
-     * @param factory
-     *            A factory that keeps generating tasks until it is done.
-     * @return A future that will return when all computations are finished.
-     */
-    public <F, T> ListenableFuture<Void> submitAll(final ComputationFactory<F, T> factory) {
-        final SettableFuture<Void> supervisor = SettableFuture.create();
-        Futures.addCallback(submitComputation(factory.initialCalculations()), new FutureCallback<F>() {
-
-            @Override
-            public void onFailure(Throwable t) {
-                supervisor.setException(t);
-            }
-
-            @Override
-            public void onSuccess(F result) {
-                runFactory(factory, result, supervisor);
-            }
-        });
-        return supervisor;
-    }
-
-    /**
      * Submits a computation, consisting of one or more runnables. The
      * computation is considered complete when its main runnable is finished.
      *
@@ -219,5 +184,63 @@ public final class Scheduler {
             submit(runnable);
         }
         return future;
+    }
+
+    /**
+     * Starts running a factory. After every computation, failed or not, a new
+     * computation is started, until {@link ComputationFactory#next()} throws a
+     * {@link NoSuchElementException} or until {@link #stopAll()} is called.
+     * This method can be called from any thread.
+     *
+     * <p>
+     * If another computation with the same uuid is already running, this method
+     * does nothing.
+     *
+     * @param factory
+     *            The factory to run.
+     */
+    public <T> void submitFactory(final ComputationFactory<T> factory) {
+        Objects.requireNonNull(factory, "factory");
+        if (this.activeFactories.add(factory.getUniqueId())) {
+            submitFactory0(factory);
+        }
+    }
+
+    private <T> void submitFactory0(final ComputationFactory<T> factory) {
+        if (stopping) {
+            // If this is removed, then every computation submitted will fail
+            // immediately, after which this method is called again - causing an
+            // infinite loop. So we need to return early here.
+            this.activeFactories.remove(factory.getUniqueId());
+            return;
+        }
+        Computation<T> next;
+        try {
+            next = factory.next();
+        } catch (NoSuchElementException e) {
+            // Done! No more computations
+            this.activeFactories.remove(factory.getUniqueId());
+            return;
+        }
+        Futures.addCallback(this.submitComputation(next), new FutureCallback<T>() {
+
+            @Override
+            public void onFailure(Throwable t) {
+                plugin.getLogger().log(Level.SEVERE, "Error executing task", t);
+                // Still continue for next element
+                submitFactory(factory);
+            }
+
+            @Override
+            public void onSuccess(T result) {
+                try {
+                    factory.handleResult(result);
+                } catch (Throwable e) {
+                    plugin.getLogger().log(Level.SEVERE, "Error handling result of task", e);
+                }
+                // Continue for next element
+                submitFactory0(factory);
+            }
+        }, asyncExecutor);
     }
 }

@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import nl.rutgerkok.topographica.util.StartupLog;
+
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
@@ -16,8 +18,6 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-
-import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class Config {
 
@@ -53,7 +53,7 @@ public final class Config {
     /**
      * Gets the configs for the given world, or the default if there are no
      * settings for this world.
-     * 
+     *
      * @param worldName
      *            Name of the world. ({@link World#getName()})
      * @return The world config.

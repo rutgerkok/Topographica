@@ -1,28 +1,44 @@
 package nl.rutgerkok.topographica.scheduler;
 
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 /**
- * For when an unknown amount of computations needs to be run. First
- * {@link #initialCalculations()} is called, then {@link #next(Object)} is
- * called repeatedly until there are no more computations to be done.
- * {@link #handleResult(Object)} is called for every finished computation
- * returned by {@link #next(Object)}.
- *
- * <p>
- * The initial calculations can be used to calculate what tasks need to be done
- * exactly, so that {@link #next(Object)} can run quickly.
- *
- * @param <F>
- *            The result of the initial computation.
+ * A class that keeps on generating new computational tasks.
  *
  * @param <T>
  *            The result types of all computations.
  */
-public abstract class ComputationFactory<F, T> {
+public abstract class ComputationFactory<T> {
 
     /**
-     * Called after a computation has finished.
+     * Based solely on class and {@link #getUniqueId()}.
+     */
+    @Override
+    public final boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+        if (other.getClass() != this.getClass()) {
+            return false;
+        }
+        return ((ComputationFactory<?>) other).getUniqueId().equals(this.getUniqueId());
+    }
+
+    /**
+     * Gets an unique id for this factory. Only one factory with this id can be
+     * active at the same time.
+     *
+     * @return The id.
+     */
+    public abstract UUID getUniqueId();
+
+    /**
+     * Called after a computation has finished. This method is called on an
+     * async thread.
      *
      * @param result
      *            The result of the calculation.
@@ -32,22 +48,23 @@ public abstract class ComputationFactory<F, T> {
     public abstract void handleResult(T result) throws Throwable;
 
     /**
-     * Performs initial calculations.
-     *
-     * @return The first computation that needs to be performed.
+     * Derived solely from {@link #getUniqueId()}.
      */
-    public abstract Computation<F> initialCalculations();
+    @Override
+    public final int hashCode() {
+        return getUniqueId().hashCode();
+    }
 
     /**
-     * Returns the next calculation.
-     *
-     * @param initialCalculations
-     *            Results of the inital calculation.
+     * Returns the next calculation. This method can be called on any thread
+     * (server thread or not), and must return quickly. Expensive computations
+     * must be done inside the returned {@link Computation}.
      *
      * @return The calculation, or empty if there are no more calculations to be
-     *         done.
+     *         done at this moment.
      * @throws NoSuchElementException
-     *             When there are no more calculations.
+     *             When there are no more calculations for now. This method will
+     *             be called again after some time.
      */
-    public abstract Computation<T> next(F initialCalculations) throws NoSuchElementException;
+    public abstract Computation<T> next() throws NoSuchElementException;
 }

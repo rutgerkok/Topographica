@@ -3,11 +3,11 @@ package nl.rutgerkok.topographica.config;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS_BITS;
 
+import nl.rutgerkok.topographica.util.StartupLog;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-
-import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class WorldConfig {
 
@@ -49,7 +49,7 @@ public final class WorldConfig {
 
     /**
      * Gets the name of this world, displayed to users.
-     * 
+     *
      * @return The name.
      */
     public String getDisplayName() {
@@ -64,6 +64,15 @@ public final class WorldConfig {
      */
     public int getMaxChunkLoadTimeNSPT() {
         return maxChunkLoadTimeNSPT;
+    }
+
+    /**
+     * Returns whether this world must be rendered at all.
+     *
+     * @return True if the world must be rendered, false otherwise.
+     */
+    public boolean isEnabled() {
+        return this.radius > 0;
     }
 
     /**

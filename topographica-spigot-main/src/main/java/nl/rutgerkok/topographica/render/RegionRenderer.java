@@ -8,13 +8,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.World;
-
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.scheduler.Computation;
 import nl.rutgerkok.topographica.scheduler.TGRunnable;
+import nl.rutgerkok.topographica.util.Region;
+
+import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
+import org.bukkit.World;
 
 public final class RegionRenderer {
 
@@ -42,7 +43,7 @@ public final class RegionRenderer {
                     }
                     if (task.snapshot == null) {
                         // Done!
-                        future.set(new DrawnRegion(regionX, regionZ, image));
+                        future.set(new DrawnRegion(renderingRegion, image));
                         return; // Ends task
                     } else {
                         chunkRenderer.render(task.snapshot, image);
@@ -70,15 +71,16 @@ public final class RegionRenderer {
         }
     }
 
+    /**
+     * Final result class.
+     */
     static class DrawnRegion {
-        final int regionX;
-        final int regionZ;
+        final Region region;
         final Canvas canvas;
 
-        public DrawnRegion(int regionX, int regionZ, Canvas canvas) {
-            this.regionX = regionX;
-            this.regionZ = regionZ;
-            this.canvas = Objects.requireNonNull(canvas);
+        public DrawnRegion(Region region, Canvas canvas) {
+            this.region = Objects.requireNonNull(region, "region");
+            this.canvas = Objects.requireNonNull(canvas, "canvas");
         }
     }
 
@@ -125,8 +127,8 @@ public final class RegionRenderer {
         }
 
         private void offer() {
-            int chunkX = regionX << REGION_SIZE_CHUNKS_BITS | chunkXInRegion;
-            int chunkZ = regionZ << REGION_SIZE_CHUNKS_BITS | chunkZInRegion;
+            int chunkX = renderingRegion.getRegionX() << REGION_SIZE_CHUNKS_BITS | chunkXInRegion;
+            int chunkZ = renderingRegion.getRegionZ() << REGION_SIZE_CHUNKS_BITS | chunkZInRegion;
 
             boolean alreadyLoaded = world.isChunkLoaded(chunkX, chunkZ);
             if (world.loadChunk(chunkX, chunkZ, false)) {
@@ -158,18 +160,16 @@ public final class RegionRenderer {
     }
 
     private final World world;
-    private final int regionX;
-    private final int regionZ;
+    private final Region renderingRegion;
     private final BlockingQueue<ChunkTask> renderQueue = new LinkedBlockingQueue<>();
     private final int maxNsPerTick;
     private final ChunkRenderer chunkRenderer;
 
-    public RegionRenderer(WorldConfig worldConfig, World world, int regionX, int regionZ) {
+    public RegionRenderer(WorldConfig worldConfig, World world, Region region) {
         this.chunkRenderer = ChunkRenderer.create(worldConfig.getColors());
         this.maxNsPerTick = worldConfig.getMaxChunkLoadTimeNSPT();
         this.world = Objects.requireNonNull(world, "world");
-        this.regionX = regionX;
-        this.regionZ = regionZ;
+        this.renderingRegion = Objects.requireNonNull(region, "region");
     }
 
     public Computation<DrawnRegion> getRenderTasks(Canvas image) {

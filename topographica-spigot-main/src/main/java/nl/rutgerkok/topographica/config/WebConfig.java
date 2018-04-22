@@ -4,10 +4,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import org.bukkit.configuration.ConfigurationSection;
-
 import nl.rutgerkok.topographica.util.StartupLog;
 import nl.rutgerkok.topographica.webserver.WebPaths;
+
+import org.bukkit.configuration.ConfigurationSection;
 
 public final class WebConfig {
 

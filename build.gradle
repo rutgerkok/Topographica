@@ -51,6 +51,7 @@ subprojects {
     processResources { // Web, config.yml and plugin.yml replacements
         filter ReplaceTokens, tokens: [
         	"PROJECT_NAME": "Topographica",
+        	"PROJECT_SLUG": "topographica",
             "VERSION": version,
             "DATE": new Date().format('yyyy-MM-dd')
         ]

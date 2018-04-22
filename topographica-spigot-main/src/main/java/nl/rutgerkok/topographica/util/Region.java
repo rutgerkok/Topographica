@@ -1,0 +1,58 @@
+package nl.rutgerkok.topographica.util;
+
+/**
+ * A Minecraft region. 512x512 blocks in size.
+ *
+ */
+public final class Region {
+
+    public static Region of(int regionX, int regionZ) {
+        return new Region(regionX, regionZ);
+    }
+
+    private final int regionX;
+    private final int regionZ;
+
+    private Region(int regionX, int regionZ) {
+        this.regionX = regionX;
+        this.regionZ = regionZ;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Region other = (Region) obj;
+        if (regionX != other.regionX)
+            return false;
+        if (regionZ != other.regionZ)
+            return false;
+        return true;
+    }
+
+    public int getRegionX() {
+        return regionX;
+    }
+
+    public int getRegionZ() {
+        return regionZ;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + regionX;
+        result = prime * result + regionZ;
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Region [regionX=" + regionX + ", regionZ=" + regionZ + "]";
+    }
+}
