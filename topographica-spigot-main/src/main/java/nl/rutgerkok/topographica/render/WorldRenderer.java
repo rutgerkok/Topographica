@@ -119,6 +119,20 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
         }
     }
 
+    /**
+     * Gets a snapshot of the rendering queue.
+     * 
+     * @return The snapshot.
+     */
+    public Set<Region> getQueueSnapshot() {
+        Set<Region> result = new LinkedHashSet<>(); // Keep insertion order
+        synchronized (this.regionQueue) {
+            result.addAll(regionQueue);
+            result.addAll(currentlyRendering);
+        }
+        return result;
+    }
+
     private Path getRegionFolder() {
         return world.getWorldFolder().toPath().resolve("region");
     }
