@@ -5,6 +5,8 @@ import java.util.Locale;
 
 import nl.rutgerkok.topographica.command.CommandHandler;
 import nl.rutgerkok.topographica.config.Config;
+import nl.rutgerkok.topographica.event.BlockListener;
+import nl.rutgerkok.topographica.event.LogToPlayerSender;
 import nl.rutgerkok.topographica.render.ServerRenderer;
 import nl.rutgerkok.topographica.scheduler.Scheduler;
 import nl.rutgerkok.topographica.util.StartupLog;
@@ -57,6 +59,7 @@ public class Topographica extends JavaPlugin {
         renderer = new ServerRenderer(scheduler, config);
 
         new LogToPlayerSender(startupLog, this).sendExistingWarnings().listenForNewPlayers();
+        getServer().getPluginManager().registerEvents(new BlockListener(renderer), this);
         this.getCommand(this.getName().toLowerCase(Locale.ROOT)).setExecutor(new CommandHandler(renderer));
     }
 

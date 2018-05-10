@@ -36,6 +36,23 @@ public class ServerRenderer implements Listener {
     }
 
     /**
+     * Puts a single region in the queue for rendering.
+     *
+     * @param world
+     *            The world.
+     * @param region
+     *            The region.
+     */
+    public void askToRenderRegion(World world, Region region) {
+        WorldRenderer renderer = getRenderer(world);
+        if (renderer.tryAddRegion(region)) {
+
+            // Reactivate renderer in case it got deactivated
+            scheduler.submitFactory(renderer);
+        }
+    }
+
+    /**
      * Gets an immutable list of all registered renderers.
      *
      * @return The renderers.
@@ -89,21 +106,5 @@ public class ServerRenderer implements Listener {
                 scheduler.submitFactory(renderer);
             }
         });
-    }
-
-    /**
-     * Puts a single region in the queue for rendering.
-     *
-     * @param world
-     *            The world.
-     * @param region
-     *            The region.
-     */
-    public void renderRegion(World world, Region region) {
-        WorldRenderer renderer = getRenderer(world);
-        renderer.addRegion(region);
-
-        // Reactivate renderer if necessary
-        scheduler.submitFactory(renderer);
     }
 }

@@ -1,4 +1,4 @@
-package nl.rutgerkok.topographica;
+package nl.rutgerkok.topographica.event;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,12 +13,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 
-final class LogToPlayerSender implements Listener {
+public final class LogToPlayerSender implements Listener {
 
     private final StartupLog log;
     private final Plugin plugin;
 
-    LogToPlayerSender(StartupLog log, Plugin plugin) {
+    public LogToPlayerSender(StartupLog log, Plugin plugin) {
         this.log = Objects.requireNonNull(log, "log");
         this.plugin = Objects.requireNonNull(plugin, "plugin");
     }
@@ -29,7 +29,7 @@ final class LogToPlayerSender implements Listener {
      *
      * @return This, for chaining.
      */
-    LogToPlayerSender listenForNewPlayers() {
+    public LogToPlayerSender listenForNewPlayers() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         return this;
     }
@@ -49,7 +49,7 @@ final class LogToPlayerSender implements Listener {
      *
      * @return This, for chaining.
      */
-    LogToPlayerSender sendExistingWarnings() {
+    public LogToPlayerSender sendExistingWarnings() {
         List<String> messages = log.getMessages();
         if (messages.isEmpty()) {
             return this;

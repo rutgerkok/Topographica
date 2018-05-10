@@ -8,14 +8,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
+import org.bukkit.World;
+
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.scheduler.Computation;
 import nl.rutgerkok.topographica.scheduler.TGRunnable;
 import nl.rutgerkok.topographica.util.Region;
-
-import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.World;
 
 public final class RegionRenderer {
 
@@ -42,7 +42,8 @@ public final class RegionRenderer {
                         continue;
                     }
                     if (task.snapshot == null) {
-                        // Done!
+                        // Done! This is the poison object, so there are no more
+                        // regions coming
                         future.set(new DrawnRegion(renderingRegion, image));
                         return; // Ends task
                     } else {
@@ -119,7 +120,6 @@ public final class RegionRenderer {
                 chunkZInRegion++;
                 if (chunkZInRegion >= REGION_SIZE_CHUNKS) {
                     // Done!
-                    markAsFinished();
                     return false;
                 }
             }
@@ -143,6 +143,8 @@ public final class RegionRenderer {
 
         @Override
         public void run() {
+            // SyncPart - load the data of as many chunks as possible within the
+            // time budget
             long startTime = System.nanoTime();
             long endTime = startTime + maxNsPerTick - overBudgetNs;
             long currentTime = startTime;
@@ -150,6 +152,7 @@ public final class RegionRenderer {
             while (renderQueue.size() < 100 && currentTime - endTime <= 0) {
                 offer();
                 if (!next()) {
+                    markAsFinished();
                     return; // The full computation is finished
                 }
                 currentTime = System.nanoTime();

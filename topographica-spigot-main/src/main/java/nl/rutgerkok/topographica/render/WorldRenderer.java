@@ -10,17 +10,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.bukkit.World;
 
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.render.RegionRenderer.DrawnRegion;
 import nl.rutgerkok.topographica.scheduler.Computation;
 import nl.rutgerkok.topographica.scheduler.ComputationFactory;
+import nl.rutgerkok.topographica.util.ConcurrentHashSet;
 import nl.rutgerkok.topographica.util.Region;
-
-import org.bukkit.World;
 
 public class WorldRenderer extends ComputationFactory<DrawnRegion> {
 
@@ -31,10 +33,12 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
     private final Path imageFolder;
 
     /**
-     * Never access directly. Use {@link #getRegion()} and
-     * {@link #addRegion(Region)}.
+     * Never access directly. Use {@link #getRegionForRendering()} and
+     * {@link #addRegionForced(Region)}.
      */
     private final LinkedHashSet<Region> regionQueue = new LinkedHashSet<>();
+
+    private final Set<Region> currentlyRendering = ConcurrentHashSet.create();
 
     /**
      * Creates a renderer for the full world.
@@ -72,7 +76,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
                     if (!worldConfig.shouldRender(regionX, regionZ)) {
                         continue;
                     }
-                    regionQueue.add(Region.of(regionX, regionZ));
+                    addRegionForced(Region.of(regionX, regionZ));
                 } catch (NumberFormatException e) {
                     // Not a region file, ignore
                 }
@@ -83,12 +87,13 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
     }
 
     /**
-     * Adds a region to the render queue. Can be called from any thread.
+     * Adds a region to the render queue, even if it shouldn't be rendered
+     * according to the world settings. Can be called from any thread.
      *
      * @param region
      *            The region.
      */
-    public void addRegion(Region region) {
+    private void addRegionForced(Region region) {
         synchronized (regionQueue) {
             regionQueue.add(region);
         }
@@ -98,7 +103,9 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
      * Clears the render queue.
      */
     public void clearRegionQueue() {
-        this.regionQueue.clear();
+        synchronized (regionQueue) {
+            this.regionQueue.clear();
+        }
     }
 
     /**
@@ -107,20 +114,23 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
      * @return The size.
      */
     public int getQueueSize() {
-        return this.regionQueue.size();
-    }
-
-    private Region getRegion() throws NoSuchElementException {
         synchronized (regionQueue) {
-            Iterator<Region> iterator = regionQueue.iterator();
-            Region region = iterator.next();
-            iterator.remove();
-            return region;
+            return this.regionQueue.size() + this.currentlyRendering.size();
         }
     }
 
     private Path getRegionFolder() {
         return world.getWorldFolder().toPath().resolve("region");
+    }
+
+    private Region getRegionForRendering() throws NoSuchElementException {
+        synchronized (regionQueue) {
+            Iterator<Region> iterator = regionQueue.iterator();
+            Region region = iterator.next();
+            iterator.remove();
+            this.currentlyRendering.add(region);
+            return region;
+        }
     }
 
     @Override
@@ -153,19 +163,40 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
 
     @Override
     public void handleResult(DrawnRegion image) throws IOException {
-        Path file = this.imageFolder.resolve("zoom-1")
+        try {
+            Path file = this.imageFolder.resolve("zoom-1")
                 .resolve("r." + image.region.getRegionX() + "." + image.region.getRegionZ() + ".jpg");
 
-        image.canvas.outputAndReset(file);
-        unusedCanvases.add(image.canvas);
+            image.canvas.outputAndReset(file);
+        } finally {
+            unusedCanvases.add(image.canvas);
+            currentlyRendering.remove(image.region);
+        }
     }
 
     @Override
     public Computation<DrawnRegion> next() throws NoSuchElementException {
-        Region region = getRegion();
+        Region region = getRegionForRendering();
+
         Canvas image = grabImage();
         RegionRenderer renderer = new RegionRenderer(worldConfig, world, region);
         return renderer.getRenderTasks(image);
+    }
+
+    /**
+     * Renders a region at some point in the future, but only if it falls within
+     * the bounds of the world that are rendered.
+     *
+     * @param region
+     *            The region.
+     * @return True if the region will be rendered, false otherwise.
+     */
+    public boolean tryAddRegion(Region region) {
+        if (this.worldConfig.shouldRender(region.getRegionX(), region.getRegionZ())) {
+            this.addRegionForced(region);
+            return true;
+        }
+        return false;
     }
 
 }

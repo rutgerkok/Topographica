@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.bukkit.command.CommandSender;
-
 import nl.rutgerkok.topographica.render.ServerRenderer;
 import nl.rutgerkok.topographica.render.WorldRenderer;
+
+import org.bukkit.command.CommandSender;
 
 final class StatusCommand extends SubCommand {
 
@@ -27,7 +27,7 @@ final class StatusCommand extends SubCommand {
         }
         for (int i = 0; i < renderers.size(); i++) {
             WorldRenderer renderer = renderers.get(i);
-            sender.sendMessage(MAIN_COLOR + i + ". World \"" + renderer.getWorld().getName() + "\": "
+            sender.sendMessage(MAIN_COLOR + (i + 1) + ". World \"" + renderer.getWorld().getName() + "\": "
                     + renderer.getQueueSize() + " regions in queue");
         }
     }

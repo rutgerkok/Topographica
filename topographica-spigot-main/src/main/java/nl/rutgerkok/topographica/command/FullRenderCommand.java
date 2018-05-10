@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import nl.rutgerkok.topographica.render.ServerRenderer;
+
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-
-import nl.rutgerkok.topographica.render.ServerRenderer;
 
 final class FullRenderCommand extends SubCommand {
 

@@ -1,5 +1,7 @@
 package nl.rutgerkok.topographica.util;
 
+import org.bukkit.block.Block;
+
 /**
  * A Minecraft region. 512x512 blocks in size.
  *
@@ -8,6 +10,17 @@ public final class Region {
 
     public static Region of(int regionX, int regionZ) {
         return new Region(regionX, regionZ);
+    }
+
+    /**
+     * Gets the region that contains the given block.
+     *
+     * @param block
+     *            The block.
+     * @return The region.
+     */
+    public static Region ofBlock(Block block) {
+        return of(block.getX() >> 9, block.getZ() >> 9);
     }
 
     private final int regionX;
