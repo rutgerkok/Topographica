@@ -4,11 +4,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import nl.rutgerkok.topographica.util.ConcurrentHashSet;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -16,6 +15,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+
+import nl.rutgerkok.topographica.util.ConcurrentHashSet;
 
 /**
  * Used to manage long-running computations.
@@ -37,7 +38,10 @@ public final class Scheduler {
 
         @Override
         public void execute(Runnable command) {
-            if (plugin.getServer().isPrimaryThread()) {
+            if (plugin.getServer().isPrimaryThread() && plugin.isEnabled()) {
+                // Switch to another thread if we are on the server thread
+                // Except during shutdown, then the task needs to be executed
+                // immediately (starting an async task is not possible)
                 plugin.getServer().getScheduler().runTaskAsynchronously(plugin, command);
             } else {
                 command.run();
@@ -207,13 +211,6 @@ public final class Scheduler {
     }
 
     private <T> void submitFactory0(final ComputationFactory<T> factory) {
-        if (stopping) {
-            // If this is removed, then every computation submitted will fail
-            // immediately, after which this method is called again - causing an
-            // infinite loop. So we need to return early here.
-            this.activeFactories.remove(factory.getUniqueId());
-            return;
-        }
         Computation<T> next;
         try {
             next = factory.next();
@@ -226,9 +223,10 @@ public final class Scheduler {
 
             @Override
             public void onFailure(Throwable t) {
-                plugin.getLogger().log(Level.SEVERE, "Error executing task", t);
-                // Still continue for next element
-                submitFactory(factory);
+                if (!(stopping && t instanceof CancellationException)) {
+                    plugin.getLogger().log(Level.SEVERE, "Error executing task", t);
+                }
+                // Do not resubmit - factory will stop
             }
 
             @Override
