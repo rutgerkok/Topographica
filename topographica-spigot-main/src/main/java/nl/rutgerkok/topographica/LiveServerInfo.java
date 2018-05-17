@@ -9,13 +9,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import net.md_5.bungee.api.ChatColor;
-import nl.rutgerkok.topographica.config.Config;
-import nl.rutgerkok.topographica.webserver.IntPair;
-import nl.rutgerkok.topographica.webserver.ServerInfo;
-import nl.rutgerkok.topographica.webserver.WebPlayer;
-import nl.rutgerkok.topographica.webserver.WebWorld;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -33,6 +26,13 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.plugin.Plugin;
+
+import net.md_5.bungee.api.ChatColor;
+import nl.rutgerkok.topographica.config.Config;
+import nl.rutgerkok.topographica.webserver.IntPair;
+import nl.rutgerkok.topographica.webserver.ServerInfo;
+import nl.rutgerkok.topographica.webserver.WebPlayer;
+import nl.rutgerkok.topographica.webserver.WebWorld;
 
 /**
  * This class is tricky to get right. The web server runs on another thread than
@@ -149,6 +149,9 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
             // Update all online players
             for (Player player : plugin.getServer().getOnlinePlayers()) {
+                if (!shouldRender(player)) {
+                    continue;
+                }
                 players.put(player.getUniqueId(), new CachedPlayer(player, updateTag));
             }
 
@@ -157,13 +160,16 @@ final class LiveServerInfo extends ServerInfo implements Listener {
                 CachedPlayer livePlayer = it.next();
                 if (livePlayer.updateTag != updateTag) {
                     // Oops, player was not updated. Apparently he logged off,
-                    // his permissions changed, etc.
+                    // his permissions changed, walked outside the rendering
+                    // area, etc.
                     it.remove();
                 }
             }
 
             updateTag++;
         }
+
+
     };
 
     LiveServerInfo(Plugin plugin, Config config) {
@@ -178,6 +184,7 @@ final class LiveServerInfo extends ServerInfo implements Listener {
             this.worlds.add(new CachedWorld(world));
         }
     }
+
 
     @Override
     public Path getImagesFolder() {
@@ -208,7 +215,10 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        this.players.put(event.getPlayer().getUniqueId(), new CachedPlayer(event.getPlayer(), (byte) -1));
+        Player player = event.getPlayer();
+        if (this.shouldRender(player)) {
+            this.players.put(player.getUniqueId(), new CachedPlayer(player, (byte) -1));
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -225,7 +235,12 @@ final class LiveServerInfo extends ServerInfo implements Listener {
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         // Teleporting is usually over long distances
         // To make the map feel more snappy, we immediately update the player
-        this.players.put(event.getPlayer().getUniqueId(), new CachedPlayer(event.getPlayer(), (byte) -1));
+        Player player = event.getPlayer();
+        if (shouldRender(player, event.getTo())) {
+            this.players.put(player.getUniqueId(), new CachedPlayer(player, (byte) -1));
+        } else {
+            this.players.remove(player.getUniqueId());
+        }
     }
 
     @EventHandler
@@ -236,6 +251,14 @@ final class LiveServerInfo extends ServerInfo implements Listener {
     @EventHandler
     public void onWorldUnload(WorldUnloadEvent event) {
         this.worlds.remove(new CachedWorld(event.getWorld()));
+    }
+
+    private boolean shouldRender(Player player) {
+        return shouldRender(player, player.getLocation());
+    }
+
+    private boolean shouldRender(Player player, Location location) {
+        return config.getConfig(player.getWorld()).shouldRenderColumn(location.getBlockX(), location.getBlockZ());
     }
 
 }

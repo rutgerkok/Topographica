@@ -4,8 +4,6 @@ import java.net.BindException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 import nl.rutgerkok.topographica.command.CommandHandler;
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.event.BlockListener;
@@ -15,6 +13,8 @@ import nl.rutgerkok.topographica.render.ServerRenderer;
 import nl.rutgerkok.topographica.scheduler.Scheduler;
 import nl.rutgerkok.topographica.util.StartupLog;
 import nl.rutgerkok.topographica.webserver.WebServer;
+
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class Topographica extends JavaPlugin {
 
@@ -58,7 +58,7 @@ public class Topographica extends JavaPlugin {
     public void onEnable() {
         Path savedQueueFile = this.getDataFolder().toPath().resolve("pending_regions.txt");
 
-        StartupLog startupLog = new StartupLog(getLogger());
+        StartupLog startupLog = StartupLog.wrapping(getLogger());
         scheduler = new Scheduler(this);
         config = loadConfigs(startupLog);
         webServer = enableWebServer(startupLog);

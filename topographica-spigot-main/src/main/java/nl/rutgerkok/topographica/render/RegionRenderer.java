@@ -114,16 +114,25 @@ public final class RegionRenderer {
         }
 
         private boolean next() {
-            chunkXInRegion++;
-            if (chunkXInRegion >= REGION_SIZE_CHUNKS) {
-                chunkXInRegion = 0;
-                chunkZInRegion++;
-                if (chunkZInRegion >= REGION_SIZE_CHUNKS) {
-                    // Done!
-                    return false;
+            while (true) {
+                // Keep searching until a suitable chunk is found
+                chunkXInRegion++;
+                if (chunkXInRegion >= REGION_SIZE_CHUNKS) {
+                    chunkXInRegion = 0;
+                    chunkZInRegion++;
+                    if (chunkZInRegion >= REGION_SIZE_CHUNKS) {
+                        // Done!
+                        return false;
+                    }
+                }
+
+                // We have a candidate
+                int chunkX = renderingRegion.getRegionX() << REGION_SIZE_CHUNKS_BITS | chunkXInRegion;
+                int chunkZ = renderingRegion.getRegionZ() << REGION_SIZE_CHUNKS_BITS | chunkZInRegion;
+                if (worldConfig.shouldRenderChunk(chunkX, chunkZ)) {
+                    return true;
                 }
             }
-            return true;
         }
 
         private void offer() {
@@ -167,12 +176,15 @@ public final class RegionRenderer {
     private final BlockingQueue<ChunkTask> renderQueue = new LinkedBlockingQueue<>();
     private final int maxNsPerTick;
     private final ChunkRenderer chunkRenderer;
+    private final WorldConfig worldConfig;
 
     public RegionRenderer(WorldConfig worldConfig, World world, Region region) {
-        this.chunkRenderer = ChunkRenderer.create(worldConfig.getColors());
-        this.maxNsPerTick = worldConfig.getMaxChunkLoadTimeNSPT();
+        this.worldConfig = Objects.requireNonNull(worldConfig, "worldConfig");
         this.world = Objects.requireNonNull(world, "world");
         this.renderingRegion = Objects.requireNonNull(region, "region");
+
+        this.chunkRenderer = ChunkRenderer.create(worldConfig);
+        this.maxNsPerTick = worldConfig.getMaxChunkLoadTimeNSPT();
     }
 
     public Computation<DrawnRegion> getRenderTasks(Canvas image) {

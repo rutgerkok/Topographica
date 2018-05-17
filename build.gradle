@@ -100,6 +100,8 @@ project(':topographica-web-standalone') {
 project(':topographica-spigot-main') {
     dependencies {
         compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+        testCompile 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+        testCompile 'com.google.guava:guava:18.0'
         compile project(':topographica-web-shared')
     }
 

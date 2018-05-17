@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.google.common.collect.ImmutableList;
 
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldUnloadEvent;
@@ -33,6 +34,21 @@ public class ServerRenderer implements Listener {
     public ServerRenderer(Scheduler scheduler, Config config) {
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         this.config = Objects.requireNonNull(config, "config");
+    }
+
+    /**
+     * Puts the region of a block in the queue for rendering.
+     *
+     * @param block
+     *            The block.
+     */
+    public void askToRenderBlock(Block block) {
+        WorldRenderer renderer = getRenderer(block.getWorld());
+        if (renderer.tryAddBlock(block)) {
+
+            // Reactivate renderer in case it got deactivated
+            scheduler.submitFactory(renderer);
+        }
     }
 
     /**

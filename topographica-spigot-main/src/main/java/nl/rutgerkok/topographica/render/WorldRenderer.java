@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.config.WorldConfig;
@@ -73,10 +74,11 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
                 try {
                     int regionX = Integer.parseInt(fileName[1]);
                     int regionZ = Integer.parseInt(fileName[2]);
-                    if (!worldConfig.shouldRender(regionX, regionZ)) {
+                    Region region = Region.of(regionX, regionZ);
+                    if (!worldConfig.shouldRender(region)) {
                         continue;
                     }
-                    addRegionForced(Region.of(regionX, regionZ));
+                    addRegionForced(region);
                 } catch (NumberFormatException e) {
                     // Not a region file, ignore
                 }
@@ -121,7 +123,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
 
     /**
      * Gets a snapshot of the rendering queue.
-     * 
+     *
      * @return The snapshot.
      */
     public Set<Region> getQueueSnapshot() {
@@ -179,7 +181,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
     public void handleResult(DrawnRegion image) throws IOException {
         try {
             Path file = this.imageFolder.resolve("zoom-1")
-                .resolve("r." + image.region.getRegionX() + "." + image.region.getRegionZ() + ".jpg");
+                    .resolve("r." + image.region.getRegionX() + "." + image.region.getRegionZ() + ".jpg");
 
             image.canvas.outputAndReset(file);
         } finally {
@@ -198,6 +200,22 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
     }
 
     /**
+     * Renders a region of the block at some point in the future, but only if the block falls within
+     * the bounds of the world that are rendered.
+     *
+     * @param block
+     *            The block.
+     * @return True if the region will be rendered, false otherwise.
+     */
+    public boolean tryAddBlock(Block block) {
+        if (this.worldConfig.shouldRenderColumn(block.getX(), block.getZ())) {
+            this.addRegionForced(Region.ofBlock(block));
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Renders a region at some point in the future, but only if it falls within
      * the bounds of the world that are rendered.
      *
@@ -206,7 +224,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
      * @return True if the region will be rendered, false otherwise.
      */
     public boolean tryAddRegion(Region region) {
-        if (this.worldConfig.shouldRender(region.getRegionX(), region.getRegionZ())) {
+        if (this.worldConfig.shouldRender(region)) {
             this.addRegionForced(region);
             return true;
         }

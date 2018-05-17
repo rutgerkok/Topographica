@@ -2,15 +2,14 @@ package nl.rutgerkok.topographica.event;
 
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.render.ServerRenderer;
-import nl.rutgerkok.topographica.util.Region;
-
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+
+import nl.rutgerkok.topographica.render.ServerRenderer;
 
 public final class BlockListener implements Listener {
 
@@ -23,12 +22,12 @@ public final class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
-        this.renderer.askToRenderRegion(block.getWorld(), Region.ofBlock(block));
+        this.renderer.askToRenderBlock(block);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
-        this.renderer.askToRenderRegion(block.getWorld(), Region.ofBlock(block));
+        this.renderer.askToRenderBlock(block);
     }
 }

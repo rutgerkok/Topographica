@@ -71,7 +71,9 @@ public class ColorConfig {
 
     public ColorConfig(ConfigurationSection configurationSection, StartupLog log) {
         Set<String> materialNames = configurationSection.getKeys(false);
-        materialNames.addAll(configurationSection.getDefaultSection().getKeys(false));
+        if (configurationSection.getDefaultSection() != null) {
+            materialNames.addAll(configurationSection.getDefaultSection().getKeys(false));
+        }
         for (String materialName : materialNames) {
             Material material = Material.matchMaterial(materialName);
             if (material == null) {
