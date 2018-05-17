@@ -36,9 +36,6 @@ function startUpdating(map) { // Also works for restarting updating
 
 // Load players
 function fetchPlayers(map) {
-    if (!document.hasFocus()) {
-        return;
-    }
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
