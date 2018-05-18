@@ -12,12 +12,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.common.collect.ImmutableMap;
+
+import org.json.simple.JSONArray;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -28,8 +31,6 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-
-import org.json.simple.JSONArray;
 
 final class WebRequestHandler {
 
@@ -70,6 +71,7 @@ final class WebRequestHandler {
     }
 
     private String getMime(String fileName) {
+        fileName = fileName.toLowerCase(Locale.ROOT);
         if (fileName.endsWith(".html")) {
             return "text/html; charset=utf-8";
         }
@@ -78,6 +80,9 @@ final class WebRequestHandler {
         }
         if (fileName.endsWith(".js")) {
             return "text/javascript";
+        }
+        if (fileName.endsWith(".png")) {
+            return "image/png";
         }
         throw new UnsupportedOperationException("Unkown MIME: " + fileName);
     }
