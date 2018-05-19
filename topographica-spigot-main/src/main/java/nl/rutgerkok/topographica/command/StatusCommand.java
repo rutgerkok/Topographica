@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.bukkit.command.CommandSender;
+
 import nl.rutgerkok.topographica.render.ServerRenderer;
 import nl.rutgerkok.topographica.render.WorldRenderer;
-
-import org.bukkit.command.CommandSender;
 
 final class StatusCommand extends SubCommand {
 

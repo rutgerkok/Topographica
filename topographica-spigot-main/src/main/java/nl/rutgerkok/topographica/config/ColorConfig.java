@@ -8,11 +8,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nl.rutgerkok.topographica.util.StartupLog;
-
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public class ColorConfig {
 

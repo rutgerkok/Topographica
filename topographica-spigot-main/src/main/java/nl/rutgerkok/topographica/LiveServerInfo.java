@@ -28,6 +28,7 @@ import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.plugin.Plugin;
 
 import net.md_5.bungee.api.ChatColor;
+
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.webserver.IntPair;
 import nl.rutgerkok.topographica.webserver.ServerInfo;
@@ -169,7 +170,6 @@ final class LiveServerInfo extends ServerInfo implements Listener {
             updateTag++;
         }
 
-
     };
 
     LiveServerInfo(Plugin plugin, Config config) {
@@ -184,7 +184,6 @@ final class LiveServerInfo extends ServerInfo implements Listener {
             this.worlds.add(new CachedWorld(world));
         }
     }
-
 
     @Override
     public Path getImagesFolder() {

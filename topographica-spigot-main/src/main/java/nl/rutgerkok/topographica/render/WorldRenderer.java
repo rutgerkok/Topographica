@@ -200,8 +200,8 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
     }
 
     /**
-     * Renders a region of the block at some point in the future, but only if the block falls within
-     * the bounds of the world that are rendered.
+     * Renders a region of the block at some point in the future, but only if
+     * the block falls within the bounds of the world that are rendered.
      *
      * @param block
      *            The block.

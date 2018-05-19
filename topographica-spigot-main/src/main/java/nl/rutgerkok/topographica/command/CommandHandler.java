@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import nl.rutgerkok.topographica.render.ServerRenderer;
-
 import com.google.common.collect.ImmutableMap;
 
 import org.bukkit.command.Command;
@@ -16,6 +14,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
+
+import nl.rutgerkok.topographica.render.ServerRenderer;
 
 public final class CommandHandler implements TabExecutor {
 

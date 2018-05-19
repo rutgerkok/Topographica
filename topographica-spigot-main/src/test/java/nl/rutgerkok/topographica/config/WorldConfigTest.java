@@ -26,7 +26,7 @@ public class WorldConfigTest {
         assertTrue(config.shouldRender(Region.of(0, 0)));
         assertTrue(config.shouldRender(Region.of(1, 0)));
         assertFalse(config.shouldRender(Region.of(10, 0)));
-        
+
         assertTrue(config.shouldRenderChunk(11, -26));
     }
 

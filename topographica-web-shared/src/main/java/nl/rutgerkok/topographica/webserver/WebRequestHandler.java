@@ -20,8 +20,6 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.json.simple.JSONArray;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -31,6 +29,8 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+
+import org.json.simple.JSONArray;
 
 final class WebRequestHandler {
 

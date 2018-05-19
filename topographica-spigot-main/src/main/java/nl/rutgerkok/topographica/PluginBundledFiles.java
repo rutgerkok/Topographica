@@ -3,9 +3,9 @@ package nl.rutgerkok.topographica;
 import java.io.InputStream;
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.webserver.BundledFiles;
-
 import org.bukkit.plugin.Plugin;
+
+import nl.rutgerkok.topographica.webserver.BundledFiles;
 
 /**
  * Wraps a plugin to make it conform to the {@link BundledFiles} interface.

@@ -3,15 +3,15 @@ package nl.rutgerkok.topographica.event;
 import java.util.List;
 import java.util.Objects;
 
-import nl.rutgerkok.topographica.util.Chat;
-import nl.rutgerkok.topographica.util.Permissions;
-import nl.rutgerkok.topographica.util.StartupLog;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
+
+import nl.rutgerkok.topographica.util.Chat;
+import nl.rutgerkok.topographica.util.Permissions;
+import nl.rutgerkok.topographica.util.StartupLog;
 
 public final class LogToPlayerSender implements Listener {
 

@@ -1,5 +1,7 @@
-#Organize Import Order
-#Sun Oct 29 12:21:27 CET 2017
+# Organize Import Order
+# First Java, then alphabetical
+5=nl
+4=net
 3=org
 2=com
 1=javax

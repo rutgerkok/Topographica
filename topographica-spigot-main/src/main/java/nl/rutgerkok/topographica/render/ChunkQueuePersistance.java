@@ -46,7 +46,7 @@ public final class ChunkQueuePersistance {
 
     /**
      * Adds the regions stored in the queue file to the given renderer.
-     * 
+     *
      * @param server
      *            The server, for looking up worlds.
      * @param renderer
@@ -102,7 +102,7 @@ public final class ChunkQueuePersistance {
 
     /**
      * Saves all regions in the rendering queue to a file.
-     * 
+     *
      * @param renderer
      *            The renderer.
      */
