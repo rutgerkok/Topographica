@@ -18,6 +18,6 @@ public final class ChunkRendererModern extends ChunkRenderer {
 
     @Override
     protected boolean isLiquid(Material material) {
-        return material == Material.WATER || material == Material.FLOWING_WATER;
+        return material == Material.WATER;
     }
 }
