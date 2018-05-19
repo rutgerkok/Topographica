@@ -1,5 +1,6 @@
 package nl.rutgerkok.topographica.render;
 
+import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_HEIGHT_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_SIZE_BLOCKS_BITS;
 import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS;
@@ -91,9 +92,6 @@ public class ChunkRenderer {
     @SuppressWarnings("deprecation")
     protected Material getMaterial(ChunkSnapshot chunk, int x, int y, int z) {
         // New methods are not yet available in Minecraft 1.8 - 1.11
-        if (x < 0 || x >= CHUNK_SIZE_BLOCKS || z < 0 || z >= CHUNK_SIZE_BLOCKS || y < 0 || y >= 256) {
-            throw new IllegalArgumentException("Invalid pos: " + x + "," + y + "," + z);
-        }
         return Material.getMaterial(chunk.getBlockTypeId(x, y, z));
     }
 
@@ -151,6 +149,9 @@ public class ChunkRenderer {
                     continue;
                 }
                 int y = chunk.getHighestBlockYAt(x, z);
+                if (y >= CHUNK_HEIGHT_BLOCKS) {
+                    y = CHUNK_HEIGHT_BLOCKS - 1;
+                }
                 Material material = getMaterial(chunk, x, y, z);
                 if (material == Material.AIR && y > 0) {
                     // Air, try one block lower

@@ -32,6 +32,12 @@ final class LastKnownServerInfo extends ServerInfo {
         public String getFolderName() {
             return name;
         }
+
+        @Override
+        public int[] getOrigin() {
+            // Origin not yet supported
+            return new int[] { 0, 0, 0 };
+        }
     }
 
     private static final Logger logger = ServerLogger.setup(LastKnownServerInfo.class);

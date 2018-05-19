@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -34,6 +36,8 @@ import org.json.simple.JSONArray;
 
 final class WebRequestHandler {
 
+    private static final Pattern REPLACEMENT_PATTERN = Pattern.compile("<\\?=\\s*([A-Z_]+)\\s*\\?>");
+
     private static final String IMAGES_URL = "/" + WebPaths.IMAGES + "/";
     private static final byte[] NEW_LINE = new byte[] { '\r', '\n' };
 
@@ -48,10 +52,13 @@ final class WebRequestHandler {
     }
 
     private String doSmartReplacements(String line, WebWorld currentWorld) {
-        String trimmedLine = line.trim();
-        switch (trimmedLine) {
-            case "$WORLD_LIST$":
-                StringBuffer buffer = new StringBuffer("");
+        Matcher matcher = REPLACEMENT_PATTERN.matcher(line);
+        if (!matcher.find()) {
+            return line;
+        }
+        switch (matcher.group(1)) {
+            case "WORLD_LIST":
+                StringBuffer buffer = new StringBuffer(line.substring(0, matcher.start()));
                 for (WebWorld world : serverInfo.getWorlds()) {
                     buffer.append("<li><a href=\"/?world=");
                     buffer.append(Escape.forQueryParam(world.getFolderName()));
@@ -63,11 +70,19 @@ final class WebRequestHandler {
                     buffer.append(Escape.forHtml(world.getDisplayName()));
                     buffer.append("</a></li>\r\n");
                 }
+                buffer.append(line.substring(matcher.end()));
                 return buffer.toString();
-            case "var worldFolderName = \"MAGIC\";":
-                return "var worldFolderName = '" + Escape.forQueryParam(currentWorld.getFolderName()) + "';";
+            case "WORLD_FOLDER_NAME":
+                return line.substring(0, matcher.start()) + Escape.forQueryParam(currentWorld.getFolderName())
+                        + line.substring(matcher.end());
+            case "WORLD_ORIGIN":
+                int[] origin = currentWorld.getOrigin();
+                return line.substring(0, matcher.start()) +
+                        "[" + origin[0] + "," + origin[2] + "]"
+                        + line.substring(matcher.end());
+            default:
+                throw new RuntimeException("Cannot translate variable " + matcher.group(1));
         }
-        return line;
     }
 
     private String getMime(String fileName) {

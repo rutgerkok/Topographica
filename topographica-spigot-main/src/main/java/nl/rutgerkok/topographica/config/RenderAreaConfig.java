@@ -6,6 +6,7 @@ import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS_BITS;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.util.BlockVector;
 
 import nl.rutgerkok.topographica.util.Region;
 
@@ -29,6 +30,15 @@ public final class RenderAreaConfig {
         if (radius < 0) {
             throw new IllegalArgumentException("Negative radius: " + radius);
         }
+    }
+
+    /**
+     * Gets the origin or center of the world.
+     *
+     * @return The origin.
+     */
+    public BlockVector getOrigin() {
+        return new BlockVector(centerX, 65, centerZ);
     }
 
     /**

@@ -26,10 +26,12 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.BlockVector;
 
 import net.md_5.bungee.api.ChatColor;
 
 import nl.rutgerkok.topographica.config.Config;
+import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.webserver.IntPair;
 import nl.rutgerkok.topographica.webserver.ServerInfo;
 import nl.rutgerkok.topographica.webserver.WebPlayer;
@@ -112,6 +114,12 @@ final class LiveServerInfo extends ServerInfo implements Listener {
             return worldName;
         }
 
+        @Override
+        public int[] getOrigin() {
+            BlockVector vector = config.getWorldConfig(worldName).getRenderArea().getOrigin();
+            return new int[] { vector.getBlockX(), vector.getBlockY(), vector.getBlockZ() };
+        }
+
         private LiveServerInfo getOuterType() {
             return LiveServerInfo.this;
         }
@@ -181,7 +189,8 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
         // Add worlds that already exist
         for (World world : plugin.getServer().getWorlds()) {
-            if (this.config.getWorldConfig(world).isEnabled()) {
+            WorldConfig worldConfig = this.config.getWorldConfig(world);
+            if (worldConfig.isEnabled()) {
                 this.worlds.add(new CachedWorld(world));
             }
         }
@@ -247,7 +256,8 @@ final class LiveServerInfo extends ServerInfo implements Listener {
     @EventHandler
     public void onWorldInit(WorldInitEvent event) {
         World world = event.getWorld();
-        if (this.config.getWorldConfig(world).isEnabled()) {
+        WorldConfig worldConfig = this.config.getWorldConfig(world);
+        if (worldConfig.isEnabled()) {
             this.worlds.add(new CachedWorld(world));
         }
     }

@@ -15,4 +15,11 @@ public interface WebWorld {
      * @return The folder name.
      */
     String getFolderName();
+
+    /**
+     * Gets the block origin of the world, for example [0, 64, 0].
+     *
+     * @return The block origin, [x, y, z].
+     */
+    int[] getOrigin();
 }

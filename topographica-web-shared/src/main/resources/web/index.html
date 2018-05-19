@@ -19,14 +19,14 @@
 			<nav>
 				<ul>
 					<li><a class="site_title" href="/">@PROJECT_NAME@</a></li>
-					$WORLD_LIST$
+					<?= WORLD_LIST ?>
 				</ul>
 			</nav>
 		</header>
 		<div id="map__area"></div>
 		<script>
-			var worldFolderName = "MAGIC";
-			// The previous line will be edited by the web server
+			var worldFolderName = "<?= WORLD_FOLDER_NAME ?>";
+			var worldOrigin = <?= WORLD_ORIGIN ?>;
 		</script>
 		<script src="map.js"></script>
 	</body>

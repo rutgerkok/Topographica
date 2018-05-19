@@ -1,4 +1,4 @@
-// Globals: worldFolderName, 
+// Globals: worldFolderName, worldOrigin
 
 
 // Setup map
@@ -8,7 +8,7 @@ function setupMap(id) {
     map.leafletMap = L.map(id, {
         crs: L.CRS.Simple,
         zoomControl: false
-    }).setView([0, 0], -1);
+    }).setView(worldOrigin, -1);
     L.tileLayer('/images/' + worldFolderName + '/zoom{z}/r.{x}.{y}.jpg', {
         minZoom: -1,
         maxZoom: -1,

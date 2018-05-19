@@ -7,6 +7,7 @@ package nl.rutgerkok.topographica.util;
 public final class SizeConstants {
     public static final int CHUNK_SIZE_BLOCKS_BITS = 4;
     public static final int CHUNK_SIZE_BLOCKS = 1 << CHUNK_SIZE_BLOCKS_BITS;
+    public static final int CHUNK_HEIGHT_BLOCKS = 256;
 
     public static final int PIXEL_SIZE_BLOCKS_BITS = 1;
     public static final int PIXEL_SIZE_BLOCKS = 1 << PIXEL_SIZE_BLOCKS_BITS;
