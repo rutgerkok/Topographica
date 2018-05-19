@@ -181,7 +181,9 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
         // Add worlds that already exist
         for (World world : plugin.getServer().getWorlds()) {
-            this.worlds.add(new CachedWorld(world));
+            if (this.config.getWorldConfig(world).isEnabled()) {
+                this.worlds.add(new CachedWorld(world));
+            }
         }
     }
 
@@ -244,7 +246,10 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
     @EventHandler
     public void onWorldInit(WorldInitEvent event) {
-        this.worlds.add(new CachedWorld(event.getWorld()));
+        World world = event.getWorld();
+        if (this.config.getWorldConfig(world).isEnabled()) {
+            this.worlds.add(new CachedWorld(world));
+        }
     }
 
     @EventHandler
@@ -257,7 +262,8 @@ final class LiveServerInfo extends ServerInfo implements Listener {
     }
 
     private boolean shouldRender(Player player, Location location) {
-        return config.getConfig(player.getWorld()).shouldRenderColumn(location.getBlockX(), location.getBlockZ());
+        return config.getWorldConfig(player.getWorld()).getRenderArea().shouldRenderColumn(location.getBlockX(),
+                location.getBlockZ());
     }
 
 }

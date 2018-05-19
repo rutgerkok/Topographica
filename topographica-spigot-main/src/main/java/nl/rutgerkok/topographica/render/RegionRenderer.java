@@ -129,7 +129,7 @@ public final class RegionRenderer {
                 // We have a candidate
                 int chunkX = renderingRegion.getRegionX() << REGION_SIZE_CHUNKS_BITS | chunkXInRegion;
                 int chunkZ = renderingRegion.getRegionZ() << REGION_SIZE_CHUNKS_BITS | chunkZInRegion;
-                if (worldConfig.shouldRenderChunk(chunkX, chunkZ)) {
+                if (worldConfig.getRenderArea().shouldRenderChunk(chunkX, chunkZ)) {
                     return true;
                 }
             }
@@ -167,6 +167,7 @@ public final class RegionRenderer {
                 currentTime = System.nanoTime();
             }
             overBudgetNs = currentTime - endTime;
+            overBudgetNs /= 1.5;
         }
 
     }

@@ -91,6 +91,9 @@ public class ChunkRenderer {
     @SuppressWarnings("deprecation")
     protected Material getMaterial(ChunkSnapshot chunk, int x, int y, int z) {
         // New methods are not yet available in Minecraft 1.8 - 1.11
+        if (x < 0 || x >= CHUNK_SIZE_BLOCKS || z < 0 || z >= CHUNK_SIZE_BLOCKS || y < 0 || y >= 256) {
+            throw new IllegalArgumentException("Invalid pos: " + x + "," + y + "," + z);
+        }
         return Material.getMaterial(chunk.getBlockTypeId(x, y, z));
     }
 
@@ -104,7 +107,7 @@ public class ChunkRenderer {
      *
      * @param color
      *            The original color.
-     * @param amount
+     * @param adjustment
      *            Amount: 1 is no change, 0 is completely black.
      * @return The adjusted color.
      */
@@ -144,10 +147,9 @@ public class ChunkRenderer {
             for (int z = 0; z < CHUNK_SIZE_BLOCKS; z += PIXEL_SIZE_BLOCKS) {
                 int worldX = chunk.getX() << CHUNK_SIZE_BLOCKS_BITS | x;
                 int worldZ = chunk.getZ() << CHUNK_SIZE_BLOCKS_BITS | z;
-                if (!this.worldConfig.shouldRenderColumn(worldX, worldZ)) {
+                if (!this.worldConfig.getRenderArea().shouldRenderColumn(worldX, worldZ)) {
                     continue;
                 }
-
                 int y = chunk.getHighestBlockYAt(x, z);
                 Material material = getMaterial(chunk, x, y, z);
                 if (material == Material.AIR && y > 0) {

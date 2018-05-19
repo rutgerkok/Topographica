@@ -51,7 +51,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
      */
     public WorldRenderer(World world, Config config) {
         this.world = Objects.requireNonNull(world, "world");
-        this.worldConfig = config.getConfig(world);
+        this.worldConfig = config.getWorldConfig(world);
         this.imageFolder = config.getWebConfig().getImagesFolder().resolve(world.getName());
     }
 
@@ -75,7 +75,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
                     int regionX = Integer.parseInt(fileName[1]);
                     int regionZ = Integer.parseInt(fileName[2]);
                     Region region = Region.of(regionX, regionZ);
-                    if (!worldConfig.shouldRender(region)) {
+                    if (!worldConfig.getRenderArea().shouldRenderRegion(region)) {
                         continue;
                     }
                     addRegionForced(region);
@@ -208,7 +208,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
      * @return True if the region will be rendered, false otherwise.
      */
     public boolean tryAddBlock(Block block) {
-        if (this.worldConfig.shouldRenderColumn(block.getX(), block.getZ())) {
+        if (this.worldConfig.getRenderArea().shouldRenderColumn(block.getX(), block.getZ())) {
             this.addRegionForced(Region.ofBlock(block));
             return true;
         }
@@ -224,7 +224,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
      * @return True if the region will be rendered, false otherwise.
      */
     public boolean tryAddRegion(Region region) {
-        if (this.worldConfig.shouldRender(region)) {
+        if (this.worldConfig.getRenderArea().shouldRenderRegion(region)) {
             this.addRegionForced(region);
             return true;
         }

@@ -21,11 +21,11 @@ public class WorldConfigTest {
         section.set("center-x", 176);
         section.set("center-z", 108);
         section.createSection("colors", ImmutableMap.of("AIR", "#000000"));
-        WorldConfig config = new WorldConfig(null, "test", section, StartupLog.discarding());
+        RenderAreaConfig config = new WorldConfig(null, "test", section, StartupLog.discarding()).getRenderArea();
 
-        assertTrue(config.shouldRender(Region.of(0, 0)));
-        assertTrue(config.shouldRender(Region.of(1, 0)));
-        assertFalse(config.shouldRender(Region.of(10, 0)));
+        assertTrue(config.shouldRenderRegion(Region.of(0, 0)));
+        assertTrue(config.shouldRenderRegion(Region.of(1, 0)));
+        assertFalse(config.shouldRenderRegion(Region.of(10, 0)));
 
         assertTrue(config.shouldRenderChunk(11, -26));
     }
@@ -37,8 +37,8 @@ public class WorldConfigTest {
         section.set("center-x", 176);
         section.set("center-z", 108);
         section.createSection("colors", ImmutableMap.of("AIR", "#000000"));
-        WorldConfig config = new WorldConfig(null, "test", section, StartupLog.discarding());
+        RenderAreaConfig config = new WorldConfig(null, "test", section, StartupLog.discarding()).getRenderArea();
 
-        assertTrue(config.shouldRender(Region.of(0, 0)));
+        assertTrue(config.shouldRenderRegion(Region.of(0, 0)));
     }
 }

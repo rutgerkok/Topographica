@@ -37,7 +37,7 @@ public final class Config {
         this.webConfig = new WebConfig(config.getConfigurationSection("web-server"), dataFolder, log);
     }
 
-    public WorldConfig getConfig(World world) {
+    public WorldConfig getWorldConfig(World world) {
         return getWorldConfig(world.getName());
     }
 
