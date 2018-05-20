@@ -21,7 +21,7 @@ function setupMap(id) {
     }).addTo(map.leafletMap);
     
     // Start fetching players
-    map.playerMarkers = [];
+    map.players = [];
     window.addEventListener("focus", function() { startUpdating(map) });
     startUpdating(map);
 }
@@ -54,23 +54,50 @@ function fetchPlayers(map) {
     xhttp.send(); 
 }
 function clearDisplayedPlayers(map) {
-    for (var i = 0; i < map.playerMarkers.length; i++) {
-        var oldMarker = map.playerMarkers[i];
+    for (var i = 0; i < map.players.length; i++) {
+        var oldMarker = map.players[i].marker;
         map.leafletMap.removeLayer(oldMarker);
     }
-    map.playerMarkers = [];
+    map.players = [];
 }
-function displayPlayers(map, players) {
-    clearDisplayedPlayers(map);
+function findPlayerIndex(name, playerList) {
+    for (var i = 0; i < playerList.length; i++) {
+        if (playerList[i].name === name) {
+            return i;
+        }
+    }
+    return -1;
+}
+function displayPlayers(map, newPlayers) {
+    // (Re)move old players
+    var oldPlayers = map.players.slice();
+    for (var i = 0; i < oldPlayers.length; i++) {
+        var oldPlayer = oldPlayers[i];
+        var newPlayerIndex = findPlayerIndex(oldPlayer.name, newPlayers);
+        if (newPlayerIndex !== -1) {
+            // Move on map, remove from the new players list
+            var newPlayer = newPlayers[newPlayerIndex];
+            oldPlayer.x = newPlayer.x;
+            oldPlayer.y = newPlayer.y;
+            oldPlayer.marker.setLatLng(coordsToLatLong(newPlayer.x, newPlayer.z));
+            newPlayers.splice(newPlayerIndex, 1);
+        } else {
+            // Remove from map
+            map.leafletMap.removeLayer(oldPlayer.marker);
+            map.players.splice(i, 1);
+        }
+    }
 
-    for (var i = 0; i < players.length; i++) {
-        var player = players[i];
+    // Add the actually new players
+    for (var i = 0; i < newPlayers.length; i++) {
+        var player = newPlayers[i];
         playerMarker = L.marker(coordsToLatLong(player.x, player.z), {
             icon: createPlayerIcon(player.name)
         });
         playerMarker.addTo(map.leafletMap);
         playerMarker.bindPopup(player.name);
-        map.playerMarkers.push(playerMarker);
+        player.marker = playerMarker
+        map.players.push(player);
     }
 }
 function createPlayerIcon(playerName) {
