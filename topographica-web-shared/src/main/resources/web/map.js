@@ -7,8 +7,10 @@ function setupMap(id) {
 
     map.leafletMap = L.map(id, {
         crs: L.CRS.Simple,
-        zoomControl: false
-    }).setView(worldOrigin, -1);
+        zoomControl: false,
+        zoom: -1,
+        center: coordsToLatLong(worldOrigin[0], worldOrigin[1])
+    });
     L.tileLayer('/images/' + worldFolderName + '/zoom{z}/r.{x}.{y}.jpg', {
         minZoom: -1,
         maxZoom: -1,
