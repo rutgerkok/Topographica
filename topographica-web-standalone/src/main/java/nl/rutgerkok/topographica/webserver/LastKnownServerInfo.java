@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import nl.rutgerkok.topographica.marker.Marker;
+
 final class LastKnownServerInfo extends ServerInfo {
 
     private static class CachedWorld implements WebWorld {
@@ -31,6 +33,11 @@ final class LastKnownServerInfo extends ServerInfo {
         @Override
         public String getFolderName() {
             return name;
+        }
+
+        @Override
+        public List<Marker> getMarkers() {
+            return Collections.emptyList();
         }
 
         @Override

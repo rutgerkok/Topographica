@@ -1,9 +1,9 @@
 package nl.rutgerkok.topographica.render;
 
+import nl.rutgerkok.topographica.config.WorldConfig;
+
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
-
-import nl.rutgerkok.topographica.config.WorldConfig;
 
 public final class ChunkRendererModern extends ChunkRenderer {
 

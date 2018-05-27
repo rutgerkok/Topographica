@@ -14,9 +14,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.bukkit.World;
-import org.bukkit.block.Block;
-
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.render.RegionRenderer.DrawnRegion;
@@ -24,6 +21,9 @@ import nl.rutgerkok.topographica.scheduler.Computation;
 import nl.rutgerkok.topographica.scheduler.ComputationFactory;
 import nl.rutgerkok.topographica.util.ConcurrentHashSet;
 import nl.rutgerkok.topographica.util.Region;
+
+import org.bukkit.World;
+import org.bukkit.block.Block;
 
 public class WorldRenderer extends ComputationFactory<DrawnRegion> {
 

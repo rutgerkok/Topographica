@@ -3,15 +3,15 @@ package nl.rutgerkok.topographica;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -29,9 +29,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
 
 import net.md_5.bungee.api.ChatColor;
-
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.config.WorldConfig;
+import nl.rutgerkok.topographica.marker.Marker;
 import nl.rutgerkok.topographica.webserver.IntPair;
 import nl.rutgerkok.topographica.webserver.ServerInfo;
 import nl.rutgerkok.topographica.webserver.WebPlayer;
@@ -50,7 +50,7 @@ import nl.rutgerkok.topographica.webserver.WebWorld;
  */
 final class LiveServerInfo extends ServerInfo implements Listener {
 
-    private class CachedPlayer implements WebPlayer {
+    private static class CachedPlayer implements WebPlayer {
         private final String displayName;
         private final long position;
         private final String worldName;
@@ -76,11 +76,14 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
     }
 
-    private class CachedWorld implements WebWorld {
+    private static class CachedWorld implements WebWorld {
         private final String worldName;
+        private final List<Marker> markers = new CopyOnWriteArrayList<>();
+        private final WorldConfig worldConfig;
 
-        CachedWorld(World world) {
+        CachedWorld(World world, WorldConfig worldConfig) {
             this.worldName = world.getName();
+            this.worldConfig = Objects.requireNonNull(worldConfig, "worldConfig");
         }
 
         @Override
@@ -95,9 +98,6 @@ final class LiveServerInfo extends ServerInfo implements Listener {
                 return false;
             }
             CachedWorld other = (CachedWorld) obj;
-            if (!getOuterType().equals(other.getOuterType())) {
-                return false;
-            }
             if (!worldName.equals(other.worldName)) {
                 return false;
             }
@@ -106,7 +106,7 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
         @Override
         public String getDisplayName() {
-            return config.getWorldConfig(worldName).getDisplayName();
+            return worldConfig.getDisplayName();
         }
 
         @Override
@@ -115,14 +115,16 @@ final class LiveServerInfo extends ServerInfo implements Listener {
         }
 
         @Override
+        public List<Marker> getMarkers() {
+            return markers;
+        }
+
+        @Override
         public int[] getOrigin() {
-            BlockVector vector = config.getWorldConfig(worldName).getRenderArea().getOrigin();
+            BlockVector vector = worldConfig.getRenderArea().getOrigin();
             return new int[] { vector.getBlockX(), vector.getBlockY(), vector.getBlockZ() };
         }
 
-        private LiveServerInfo getOuterType() {
-            return LiveServerInfo.this;
-        }
 
         @Override
         public int hashCode() {
@@ -134,9 +136,9 @@ final class LiveServerInfo extends ServerInfo implements Listener {
     private final Config config;
 
     private final ConcurrentMap<UUID, CachedPlayer> players = new ConcurrentHashMap<>(64, 0.75f, 1);
-    private final Set<CachedWorld> worlds = Sets.newSetFromMap(new ConcurrentHashMap<CachedWorld, Boolean>());
+    private final ConcurrentMap<UUID, CachedWorld> worlds = new ConcurrentHashMap<>(4, 0.75f, 1);
 
-    private Runnable playerPositionUpdater = new Runnable() {
+    private final Runnable playerPositionUpdater = new Runnable() {
 
         byte updateTag = 1;
 
@@ -191,7 +193,7 @@ final class LiveServerInfo extends ServerInfo implements Listener {
         for (World world : plugin.getServer().getWorlds()) {
             WorldConfig worldConfig = this.config.getWorldConfig(world);
             if (worldConfig.isEnabled()) {
-                this.worlds.add(new CachedWorld(world));
+                this.worlds.put(world.getUID(), new CachedWorld(world, worldConfig));
             }
         }
     }
@@ -220,7 +222,7 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
     @Override
     public Collection<? extends WebWorld> getWorlds() {
-        return ImmutableSet.copyOf(worlds);
+        return ImmutableSet.copyOf(worlds.values());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -258,13 +260,13 @@ final class LiveServerInfo extends ServerInfo implements Listener {
         World world = event.getWorld();
         WorldConfig worldConfig = this.config.getWorldConfig(world);
         if (worldConfig.isEnabled()) {
-            this.worlds.add(new CachedWorld(world));
+            this.worlds.put(world.getUID(), new CachedWorld(world, worldConfig));
         }
     }
 
     @EventHandler
     public void onWorldUnload(WorldUnloadEvent event) {
-        this.worlds.remove(new CachedWorld(event.getWorld()));
+        this.worlds.remove(event.getWorld().getUID());
     }
 
     private boolean shouldRender(Player player) {

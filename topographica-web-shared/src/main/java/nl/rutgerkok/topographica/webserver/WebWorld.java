@@ -1,5 +1,13 @@
 package nl.rutgerkok.topographica.webserver;
 
+import java.util.List;
+
+import nl.rutgerkok.topographica.marker.Marker;
+
+/**
+ * A world, as seen by the web server.
+ *
+ */
 public interface WebWorld {
 
     /**
@@ -15,6 +23,13 @@ public interface WebWorld {
      * @return The folder name.
      */
     String getFolderName();
+
+    /**
+     * Gets the markers of this world. The returned list must be thread-safe.
+     *
+     * @return The markers.
+     */
+    List<Marker> getMarkers();
 
     /**
      * Gets the block origin of the world, for example [0, 64, 0].
