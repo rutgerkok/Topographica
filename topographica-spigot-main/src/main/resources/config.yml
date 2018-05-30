@@ -49,6 +49,8 @@ worlds:
       SAND: '#f7e9a3'
       LEAVES: '#007c00'
       SANDSTONE: '#f7e9a3'
+      HARD_CLAY: '#87472b'
+      STAINED_CLAY: '#87472b'
       SNOW: '#ffffff'
       ICE: '#a0a0ff'
       SNOW_BLOCK: '#ffffff'
