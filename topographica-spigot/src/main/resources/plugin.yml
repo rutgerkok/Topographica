@@ -2,6 +2,7 @@ name: "@PROJECT_NAME@"
 version: "@VERSION@"
 main: nl.rutgerkok.topographica.Topographica
 author: Rutger Kok
+api-version: 1.13
 permissions:
   "@PROJECT_SLUG@.admin":
     description: "Change @PROJECT_NAME@ settings."

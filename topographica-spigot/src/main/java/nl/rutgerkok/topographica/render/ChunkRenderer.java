@@ -17,27 +17,14 @@ import nl.rutgerkok.topographica.config.WorldConfig;
 public class ChunkRenderer {
 
     /**
-     * Creates a chunk renderer. Automatically switches to the new one on
-     * Minecraft 1.13.
+     * Creates a chunk renderer.
      *
      * @param worldConfig
      *            Configuration file.
      * @return The chunk renderer.
      */
     public static ChunkRenderer create(WorldConfig worldConfig) {
-        try {
-            // Use old class if ChunkSnapshot.getBlockTypeId exists
-            ChunkSnapshot.class.getMethod("getBlockTypeId", int.class, int.class, int.class);
-            return new ChunkRenderer(worldConfig);
-        } catch (NoSuchMethodException e) {
-            // Try the new class
-            try {
-                Class<?> chunkRendererModern = Class.forName(ChunkRenderer.class + "Modern");
-                return (ChunkRenderer) chunkRendererModern.getConstructor(WorldConfig.class).newInstance(worldConfig);
-            } catch (ReflectiveOperationException e1) {
-                throw new RuntimeException(e1);
-            }
-        }
+        return new ChunkRenderer(worldConfig);
     }
 
     protected final WorldConfig worldConfig;
@@ -82,7 +69,7 @@ public class ChunkRenderer {
         if (y <= 0) {
             return 0;
         }
-        Material material = getMaterial(chunk, x, y, z);
+        Material material = chunk.getBlockType(x, y, z);
         if (material == Material.AIR) {
             // Air, try one block lower
             y--;
@@ -91,7 +78,7 @@ public class ChunkRenderer {
         // Move down if we found a liquid block
         while (y > 0) {
             y--;
-            material = getMaterial(chunk, x, y, z);
+            material = chunk.getBlockType(x, y, z);
             if (!isLiquid(material)) {
                 return y + 1;
             }
@@ -100,15 +87,8 @@ public class ChunkRenderer {
         return 0;
     }
 
-    @SuppressWarnings("deprecation")
-    protected Material getMaterial(ChunkSnapshot chunk, int x, int y, int z) {
-        // New methods are not yet available in Minecraft 1.8 - 1.11
-        return Material.getMaterial(chunk.getBlockTypeId(x, y, z));
-    }
-
     protected boolean isLiquid(Material material) {
-        // New material names are not yet available in Minecraft 1.8 - 1.12
-        return material == Material.WATER || material == Material.STATIONARY_WATER;
+        return material == Material.WATER;
     }
 
     /**
@@ -161,7 +141,7 @@ public class ChunkRenderer {
                     continue;
                 }
                 int y = getHighestY(chunk, x, z);
-                Material material = getMaterial(chunk, x, y, z);
+                Material material = chunk.getBlockType(x, y, z);
                 int yNextColumn = getHighestY(chunk, x, z + 1);
 
                 Color color = colors.getColor(material);

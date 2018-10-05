@@ -1,4 +1,3 @@
 include 'topographica-web-shared'
 include 'topographica-web-standalone'
-include 'topographica-spigot-main'
-include 'topographica-spigot-modern'
+include 'topographica-spigot'

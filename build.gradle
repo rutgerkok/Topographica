@@ -1,6 +1,3 @@
-// TerrainControl build script
-// TerrainControl consists of the core project, generator modules that depend on core,
-// and the platform-specific code that depends on Spigot/Sponge and the core project.
 import org.apache.tools.ant.filters.ReplaceTokens
 
 defaultTasks "spotlessApply", 'build'
@@ -29,13 +26,13 @@ subprojects {
         maven {
             url 'https://hub.spigotmc.org/nexus/content/groups/public/' // Spigot repo
         }
-	}
+    }
 
     apply plugin: "java"
     apply plugin: "com.diffplug.gradle.spotless"
 
-    sourceCompatibility = '1.7'
-    targetCompatibility = '1.7'
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
 
     spotless { // Code formatting settings
         java {
@@ -47,7 +44,7 @@ subprojects {
             paddedCell()
         }
     }
-    
+
     processResources { // Web, config.yml and plugin.yml replacements
         filter ReplaceTokens, tokens: [
         	"PROJECT_NAME": "Topographica",
@@ -56,16 +53,16 @@ subprojects {
             "DATE": new Date().format('yyyy-MM-dd')
         ]
     }
-    
+
     dependencies {
-    	  testCompile 'junit:junit:4.12'
+        testCompile 'junit:junit:4.12'
     }
 
 }
 
 // Web server (library, used by plugin and by standalone web server)
 project(':topographica-web-shared') {
-	dependencies {
+    dependencies {
         compileOnly 'com.google.guava:guava:18.0'
         testCompile 'com.google.guava:guava:18.0'
         compileOnly 'io.netty:netty-all:4.1.19.Final'
@@ -75,58 +72,44 @@ project(':topographica-web-shared') {
 
 // Web server (standalone executable)
 project(':topographica-web-standalone') {
-	apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
-	dependencies { // Must be included in JAR file
+    dependencies { // Must be included in JAR file
         compile 'com.google.guava:guava:18.0'
         compile 'io.netty:netty-all:4.1.19.Final'
         compile 'com.googlecode.json-simple:json-simple:1.1.1'
         compile project(':topographica-web-shared')
     }
-    
+
     shadowJar {
         destinationDir = file("$rootDir")
         archiveName = "Topographica-Webserver.${extension}"
 
         manifest {
-	        attributes 'Main-Class': 'nl.rutgerkok.topographica.webserver.Main'
-	    }
+            attributes 'Main-Class': 'nl.rutgerkok.topographica.webserver.Main'
+        }
     }
-    
+
     build.dependsOn(shadowJar)
 }
 
 // Spigot plugin (main)
-project(':topographica-spigot-main') {
+project(':topographica-spigot') {
+    apply plugin: 'com.github.johnrengelman.shadow'
+
     dependencies {
-        compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
-        testCompile 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+        compileOnly 'org.spigotmc:spigot-api:1.13-pre7-R0.1-SNAPSHOT'
+        testCompile 'org.spigotmc:spigot-api:1.13-pre7-R0.1-SNAPSHOT'
         testCompile 'com.google.guava:guava:18.0'
         compile project(':topographica-web-shared')
     }
 
     processResources { // config.yml and plugin.yml replacements
         filter ReplaceTokens, tokens: [
-        	"PROJECT_NAME": "Topographica",
+            "PROJECT_NAME": "Topographica",
             "VERSION": version,
             "DATE": new Date().format('yyyy-MM-dd')
         ]
-    }
-    
-}
-
-// Spigot plugin (extra classes that require modern Spigot versions)
-project(':topographica-spigot-modern') {
-
-    apply plugin: 'com.github.johnrengelman.shadow'
-
-	repositories {
-		mavenLocal() // Bukkit is not yet anywhere else
-	}
-
-    dependencies {
-        compileOnly 'org.bukkit:bukkit:18w15a-R0.1-SNAPSHOT'
-        compile project(':topographica-spigot-main')
     }
 
     shadowJar {
@@ -138,7 +121,6 @@ project(':topographica-spigot-modern') {
         destinationDir = file("$rootDir")
         archiveName = "Topographica.${extension}"
     }
-    
+
     build.dependsOn(shadowJar)
 }
-
