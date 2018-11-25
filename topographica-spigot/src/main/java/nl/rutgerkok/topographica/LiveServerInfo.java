@@ -5,13 +5,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -27,6 +25,9 @@ import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import net.md_5.bungee.api.ChatColor;
 import nl.rutgerkok.topographica.config.Config;
@@ -218,6 +219,17 @@ final class LiveServerInfo extends ServerInfo implements Listener {
     @Override
     public int getPort() {
         return config.getWebConfig().getPort();
+    }
+
+    /**
+     * Gets the web info of the given world.
+     *
+     * @param world
+     *            The Minecraft world.
+     * @return The web info, or empty if the world is not displayed on the map.
+     */
+    public Optional<WebWorld> getWorld(World world) {
+        return Optional.ofNullable(this.worlds.get(world.getUID()));
     }
 
     @Override

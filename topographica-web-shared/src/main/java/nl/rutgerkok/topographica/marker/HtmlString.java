@@ -59,6 +59,9 @@ public final class HtmlString {
         return raw.hashCode();
     }
 
+    /**
+     * Gets the raw HTML.
+     */
     @Override
     public String toString() {
         return raw;

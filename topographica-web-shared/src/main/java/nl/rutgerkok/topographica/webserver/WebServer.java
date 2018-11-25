@@ -62,7 +62,7 @@ public final class WebServer {
                     .group(masterGroup, slaveGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() // #4
-                    {
+                            {
                         @Override
                         public void initChannel(final SocketChannel ch)
                                 throws Exception {
@@ -71,41 +71,41 @@ public final class WebServer {
                                     new HttpObjectAggregator(512 * 1024));
                             ch.pipeline().addLast("request",
                                     new ChannelInboundHandlerAdapter() {
-                                        @Override
-                                        public void channelRead(ChannelHandlerContext ctx, Object msg)
-                                                throws Exception {
-                                            try {
-                                                if (msg instanceof FullHttpRequest) {
-                                                    FullHttpRequest request = (FullHttpRequest) msg;
-                                                    FullHttpResponse response = requestHandler.respond(request);
-                                                    if (HttpUtil.isKeepAlive(request)) {
-                                                        response.headers().set(HttpHeaderNames.CONNECTION,
-                                                                HttpHeaderValues.KEEP_ALIVE);
-                                                    }
-                                                    ctx.writeAndFlush(response);
-                                                }
-                                            } finally {
-                                                ReferenceCountUtil.release(msg);
+                                @Override
+                                public void channelRead(ChannelHandlerContext ctx, Object msg)
+                                        throws Exception {
+                                    try {
+                                        if (msg instanceof FullHttpRequest) {
+                                            FullHttpRequest request = (FullHttpRequest) msg;
+                                            FullHttpResponse response = requestHandler.respond(request);
+                                            if (HttpUtil.isKeepAlive(request)) {
+                                                response.headers().set(HttpHeaderNames.CONNECTION,
+                                                        HttpHeaderValues.KEEP_ALIVE);
                                             }
+                                            ctx.writeAndFlush(response);
                                         }
+                                    } finally {
+                                        ReferenceCountUtil.release(msg);
+                                    }
+                                }
 
-                                        @Override
-                                        public void channelReadComplete(ChannelHandlerContext ctx)
-                                                throws Exception {
-                                            ctx.flush();
-                                        }
+                                @Override
+                                public void channelReadComplete(ChannelHandlerContext ctx)
+                                        throws Exception {
+                                    ctx.flush();
+                                }
 
-                                        @Override
-                                        public void exceptionCaught(ChannelHandlerContext ctx,
-                                                Throwable cause) throws Exception {
-                                            ctx.writeAndFlush(new DefaultFullHttpResponse(
-                                                    HttpVersion.HTTP_1_1,
-                                                    HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                                                    copiedBuffer(cause.getMessage().getBytes(StandardCharsets.UTF_8))));
-                                        }
-                                    });
+                                @Override
+                                public void exceptionCaught(ChannelHandlerContext ctx,
+                                        Throwable cause) throws Exception {
+                                    ctx.writeAndFlush(new DefaultFullHttpResponse(
+                                            HttpVersion.HTTP_1_1,
+                                            HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                                            copiedBuffer(cause.getMessage().getBytes(StandardCharsets.UTF_8))));
+                                }
+                            });
                         }
-                    })
+                            })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             channel = bootstrap.bind(serverInfo.getPort()).sync();

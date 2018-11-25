@@ -50,9 +50,9 @@ public final class PolygonStyle {
     }
 
     /**
-     * Sets whether the shape must be filled. Note: all other filling methods
-     * will automatically update this value, so calling this usually isn't
-     * needed.
+     * Sets whether the shape must be filled. Note: {@link #fillRule(FillRule)} and
+     * {@link #fillColor(Color)} will automatically update call this method, so
+     * calling this method yourself shouldn't be necessary.
      *
      * @param fill
      *            True if the shape must be filled, false otherwise.
@@ -94,8 +94,9 @@ public final class PolygonStyle {
     }
 
     /**
-     * Sets whether a stroke must be drawn. Note: all other stroke methods will
-     * automatically update this value, so calling this usually isn't needed.
+     * Sets whether a stroke must be drawn. Note: the {@link #strokeColor(Color)}
+     * and {@link #strokeWidth(double)} methods will automatically update this
+     * value, so calling this method usually isn't necessary.
      *
      * @param stroke
      *            True if a stroke is drawn, false otherwise.

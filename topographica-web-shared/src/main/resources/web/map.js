@@ -1,4 +1,4 @@
-// Globals: worldFolderName, worldOrigin
+// Globals: worldFolderName, worldOrigin, worldMarkers
 
 
 // Setup map
@@ -19,11 +19,27 @@ function setupMap(id) {
         noWrap: true,
         continuousWorld: true
     }).addTo(map.leafletMap);
-    
+
+    addMarkers(map, worldMarkers);
+
     // Start fetching players
     map.players = [];
     window.addEventListener("focus", function() { startUpdating(map) });
     startUpdating(map);
+}
+
+function addMarkers(map, worldMarkers) {
+    for (var i = 0; i < worldMarkers.length; i++) {
+        var markerJson = worldMarkers[i];
+        var method = L[markerJson.method];
+        var marker = markerJson.secondParam === undefined?
+                        method(markerJson.firstParam) :
+                        method(markerJson.firstParam, markerJson.secondParam);
+        if (markerJson.tooltip !== undefined) {
+            marker.bindPopup(markerJson.tooltip);
+        }
+        marker.addTo(map.leafletMap);
+    }
 }
 
 function startUpdating(map) { // Also works for restarting updating

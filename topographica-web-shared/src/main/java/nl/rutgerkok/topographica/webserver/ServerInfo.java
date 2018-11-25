@@ -2,6 +2,7 @@ package nl.rutgerkok.topographica.webserver;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Reads out many different properties of the server environment, like the
@@ -40,15 +41,15 @@ public abstract class ServerInfo {
      *
      * @param worldName
      *            World folder name.
-     * @return The world, or null if not found.
+     * @return The world, or empty if not found.
      */
-    public WebWorld getWorld(String worldName) {
+    public Optional<WebWorld> getWorld(String worldName) {
         for (WebWorld world : getWorlds()) {
             if (world.getFolderName().equals(worldName)) {
-                return world;
+                return Optional.of(world);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

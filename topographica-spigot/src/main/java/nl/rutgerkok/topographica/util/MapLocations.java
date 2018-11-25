@@ -4,13 +4,13 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
-import nl.rutgerkok.topographica.marker.MapPoint;
+import nl.rutgerkok.topographica.marker.MapLocation;
 
 /**
- * A bridge between Spigot-classes and {@link MapPoint}.
+ * A bridge between Spigot-classes and {@link MapLocation}.
  *
  */
-public final class MapPoints {
+public final class MapLocations {
 
     /**
      * Creates a map point at the given block. The world of the block is
@@ -20,8 +20,8 @@ public final class MapPoints {
      *            The location.
      * @return The map point.
      */
-    public static MapPoint ofBlock(Block block) {
-        return MapPoint.of(block.getX(), block.getZ());
+    public static MapLocation ofBlock(Block block) {
+        return MapLocation.of(block.getX(), block.getZ());
     }
     /**
      * Creates a map point at the given location. The world of the location is
@@ -32,8 +32,8 @@ public final class MapPoints {
      *            The location.
      * @return The map point.
      */
-    public static MapPoint ofLocation(Location location) {
-        return MapPoint.of(location.getBlockX(), location.getBlockZ());
+    public static MapLocation ofLocation(Location location) {
+        return MapLocation.of(location.getBlockX(), location.getBlockZ());
     }
 
     /**
@@ -45,11 +45,11 @@ public final class MapPoints {
      *            The location.
      * @return The map point.
      */
-    public static MapPoint ofVector(Vector vector) {
-        return MapPoint.of(vector.getBlockX(), vector.getBlockZ());
+    public static MapLocation ofVector(Vector vector) {
+        return MapLocation.of(vector.getBlockX(), vector.getBlockZ());
     }
 
-    private MapPoints() {
+    private MapLocations() {
     // No instances!
     }
 }

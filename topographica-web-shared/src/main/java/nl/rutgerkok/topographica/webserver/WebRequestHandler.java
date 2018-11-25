@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,10 +16,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.json.simple.JSONArray;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -31,8 +35,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-
-import org.json.simple.JSONArray;
+import nl.rutgerkok.topographica.marker.Marker;
 
 final class WebRequestHandler {
 
@@ -51,7 +54,7 @@ final class WebRequestHandler {
         this.logger = Objects.requireNonNull(logger, "logger");
     }
 
-    private String doSmartReplacements(String line, WebWorld currentWorld) {
+    private String doSmartReplacements(String line, WebWorld currentWorld) throws IOException {
         Matcher matcher = REPLACEMENT_PATTERN.matcher(line);
         if (!matcher.find()) {
             return line;
@@ -74,12 +77,28 @@ final class WebRequestHandler {
                 return buffer.toString();
             case "WORLD_FOLDER_NAME":
                 return line.substring(0, matcher.start()) + Escape.forQueryParam(currentWorld.getFolderName())
-                        + line.substring(matcher.end());
+                + line.substring(matcher.end());
             case "WORLD_ORIGIN":
                 int[] origin = currentWorld.getOrigin();
                 return line.substring(0, matcher.start()) +
                         "[" + origin[0] + "," + origin[2] + "]"
                         + line.substring(matcher.end());
+            case "WORLD_MARKERS":
+                StringWriter writer = new StringWriter();
+                writer.write(line.substring(0, matcher.start()));
+                writer.write("[");
+                boolean first = true;
+                for (Marker marker : currentWorld.getMarkers()) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        writer.write(",");
+                    }
+                    marker.writeJSONString(writer);
+                }
+                writer.write("]");
+                writer.write(line.substring(matcher.end()));
+                return writer.toString();
             default:
                 throw new RuntimeException("Cannot translate variable " + matcher.group(1));
         }
@@ -103,7 +122,7 @@ final class WebRequestHandler {
     }
 
     private WebWorld getWorldFromQuery(String uri) {
-        WebWorld world = null;
+        Optional<WebWorld> world = Optional.empty();
 
         String query = "";
         int questionMarkIndex = uri.indexOf('?');
@@ -120,10 +139,8 @@ final class WebRequestHandler {
             world = this.serverInfo.getWorld(worldName);
         }
 
-        if (world == null) {
-            world = this.serverInfo.getWorlds().iterator().next();
-        }
-        return world;
+        return world
+                .orElseGet(() -> this.serverInfo.getWorlds().iterator().next());
     }
 
     private FullHttpResponse jsonResponse(List<?> output) throws IOException {

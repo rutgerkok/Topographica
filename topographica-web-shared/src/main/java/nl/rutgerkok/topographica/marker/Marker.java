@@ -11,6 +11,8 @@ import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
+import com.google.common.collect.ImmutableMap;
+
 /**
  * A marker, displayed on the map.
  *
@@ -23,12 +25,14 @@ public class Marker implements JSONStreamAware {
      */
     public static class Polygon extends Marker {
 
-        Polygon(String method, JSONAware firstParam, JSONObject secondParam, HtmlString tooltipOrNull) {
+        Polygon(String method, JSONAware firstParam, ImmutableMap<String, Object> secondParam,
+                HtmlString tooltipOrNull) {
             super(method, firstParam, secondParam, tooltipOrNull);
         }
 
         @Override
         public Polygon tooltip(HtmlString tooltip) {
+            // Overridden to keep the Polygon type
             Objects.requireNonNull(tooltip, "tooltip");
             return new Polygon(method, firstParam, secondParam, tooltip);
         }
@@ -42,13 +46,12 @@ public class Marker implements JSONStreamAware {
          *            The style.
          * @return The new marker.
          */
-        @SuppressWarnings("unchecked")
         public Polygon withStyle(PolygonStyle style) {
             Objects.requireNonNull(style, "style");
-            JSONObject secondParam = new JSONObject();
+            ImmutableMap.Builder<String, Object> secondParam = ImmutableMap.builder();
             secondParam.putAll(this.secondParam);
             secondParam.putAll(style.options);
-            return new Polygon(method, firstParam, secondParam, tooltipOrNull);
+            return new Polygon(method, firstParam, secondParam.build(), tooltipOrNull);
         }
     }
 
@@ -61,10 +64,8 @@ public class Marker implements JSONStreamAware {
      *            Radius of the circle, in blocks.
      * @return The circle.
      */
-    @SuppressWarnings("unchecked")
-    public static Polygon circle(MapPoint center, int radius) {
-        JSONObject options = new JSONObject();
-        options.put("radius", radius);
+    public static Polygon circle(MapLocation center, int radius) {
+        ImmutableMap<String, Object> options = ImmutableMap.of("radius", radius);
         return new Polygon("circle", center, options, null);
     }
 
@@ -75,23 +76,25 @@ public class Marker implements JSONStreamAware {
      *            The point.
      * @return The point marker.
      */
-    public static Marker point(MapPoint point) {
-        return new Marker("marker", point, new JSONObject(), null);
+    public static Marker point(MapLocation point) {
+        return new Marker("marker", point, ImmutableMap.of(), null);
     }
 
     /**
-     * A polygon: can be any (closed) shape. Do not include the first point as
-     * the final point.
+     * A polygon: can be any (closed) shape. You give a list of points describing
+     * the shape. The shape will automatically be closed. Therefore, there is
+     * <strong>no</strong> need to manually close the shape by making the first and
+     * last point equal.
      *
      * @param points
      *            The points.
      * @return The polygon.
      */
     @SuppressWarnings("unchecked")
-    public static Polygon polygon(List<MapPoint> points) {
+    public static Polygon polygon(List<MapLocation> points) {
         JSONArray array = new JSONArray();
         array.addAll(points);
-        return new Polygon("polygon", array, new JSONObject(), null);
+        return new Polygon("polygon", array, ImmutableMap.of(), null);
     }
 
     /**
@@ -101,7 +104,7 @@ public class Marker implements JSONStreamAware {
      *            The points.
      * @return The polygon.
      */
-    public static Polygon polygon(MapPoint... points) {
+    public static Polygon polygon(MapLocation... points) {
         return polygon(Arrays.asList(points));
     }
 
@@ -114,9 +117,9 @@ public class Marker implements JSONStreamAware {
      *            Final point.
      * @return The rectangle.
      */
-    public static Marker rectangle(MapPoint lowestXZ, MapPoint highestXZ) {
-        MapPoint lowestXHighestZ = MapPoint.of(lowestXZ.getX(), highestXZ.getZ());
-        MapPoint highestXLowestZ = MapPoint.of(highestXZ.getX(), lowestXZ.getZ());
+    public static Marker rectangle(MapLocation lowestXZ, MapLocation highestXZ) {
+        MapLocation lowestXHighestZ = MapLocation.of(lowestXZ.getX(), highestXZ.getZ());
+        MapLocation highestXLowestZ = MapLocation.of(highestXZ.getX(), lowestXZ.getZ());
         return polygon(lowestXZ, highestXLowestZ, highestXZ, lowestXHighestZ);
     }
 
@@ -128,10 +131,10 @@ public class Marker implements JSONStreamAware {
     /**
      * May not be mutated to keep this class thread-safe and safe for storage.
      */
-    protected final JSONObject secondParam;
+    protected final ImmutableMap<String, Object> secondParam;
     protected final HtmlString tooltipOrNull;
 
-    Marker(String method, JSONAware firstParam, JSONObject secondParam, HtmlString tooltipOrNull) {
+    Marker(String method, JSONAware firstParam, ImmutableMap<String, Object> secondParam, HtmlString tooltipOrNull) {
         this.method = Objects.requireNonNull(method, "method");
         this.firstParam = Objects.requireNonNull(firstParam, "firstParam");
         this.secondParam = Objects.requireNonNull(secondParam, "secondParam");
@@ -200,7 +203,7 @@ public class Marker implements JSONStreamAware {
         object.put("firstParam", firstParam);
         object.put("secondParam", secondParam);
         if (this.tooltipOrNull != null) {
-            object.put("tooltip", tooltipOrNull);
+            object.put("tooltip", tooltipOrNull.toString());
         }
         object.writeJSONString(out);
     }
