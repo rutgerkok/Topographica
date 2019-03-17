@@ -6,18 +6,54 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * A marker, displayed on the map.
  *
  */
 public class Marker implements JSONStreamAware {
+
+    /**
+     * A line in between points.
+     *
+     */
+    public static class Line extends Marker {
+
+        Line(String method, JSONAware firstParam, ImmutableMap<String, Object> secondParam, HtmlString tooltipOrNull) {
+            super(method, firstParam, secondParam, tooltipOrNull);
+        }
+
+        @Override
+        public Line tooltip(HtmlString tooltip) {
+            // Overridden to keep the Polygon type
+            Objects.requireNonNull(tooltip, "tooltip");
+            return new Line(method, firstParam, secondParam, tooltip);
+        }
+
+        /**
+         * Creates a new line with the given style. Make sure that no other
+         * thread is modifying the {@link PolygonStyle} object while this method
+         * is called.
+         *
+         * @param style
+         *            The style.
+         * @return The new line.
+         */
+        public Line withStyle(LineStyle style) {
+            Objects.requireNonNull(style, "style");
+            ImmutableMap.Builder<String, Object> secondParam = ImmutableMap.builder();
+            secondParam.putAll(this.secondParam);
+            secondParam.putAll(style.options);
+            return new Line(method, firstParam, secondParam.build(), tooltipOrNull);
+        }
+
+    }
 
     /**
      * A polygon marker.
@@ -70,6 +106,34 @@ public class Marker implements JSONStreamAware {
     }
 
     /**
+     * A line between the given points.
+     *
+     * @param points
+     *            The points. Provide at least two points.
+     * @return The line.
+     */
+    @SuppressWarnings("unchecked")
+    public static Line line(List<MapLocation> points) {
+        JSONArray array = new JSONArray();
+        array.addAll(points);
+        if (array.size() < 2) {
+            throw new IllegalArgumentException("Less than two points were given: " + array);
+        }
+        return new Line("polyline", array, ImmutableMap.of(), null);
+    }
+
+    /**
+     * A line between the given points.
+     *
+     * @param points
+     *            The points. Provide at least two points.
+     * @return The line.
+     */
+    public static Line line(MapLocation... points) {
+        return line(Arrays.asList(points));
+    }
+
+    /**
      * A typical map marker.
      *
      * @param point
@@ -81,10 +145,10 @@ public class Marker implements JSONStreamAware {
     }
 
     /**
-     * A polygon: can be any (closed) shape. You give a list of points describing
-     * the shape. The shape will automatically be closed. Therefore, there is
-     * <strong>no</strong> need to manually close the shape by making the first and
-     * last point equal.
+     * A polygon: can be any (closed) shape. You give a list of points
+     * describing the shape. The shape will automatically be closed. Therefore,
+     * there is <strong>no</strong> need to manually close the shape by making
+     * the first and last point equal.
      *
      * @param points
      *            The points.
