@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
+
+import com.google.common.collect.ImmutableMap;
 
 import nl.rutgerkok.topographica.render.ServerRenderer;
 

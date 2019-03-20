@@ -77,7 +77,7 @@ final class WebRequestHandler {
                 return buffer.toString();
             case "WORLD_FOLDER_NAME":
                 return line.substring(0, matcher.start()) + Escape.forQueryParam(currentWorld.getFolderName())
-                + line.substring(matcher.end());
+                        + line.substring(matcher.end());
             case "WORLD_ORIGIN":
                 int[] origin = currentWorld.getOrigin();
                 return line.substring(0, matcher.start()) +

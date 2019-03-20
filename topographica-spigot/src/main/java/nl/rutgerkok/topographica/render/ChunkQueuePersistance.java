@@ -13,10 +13,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import nl.rutgerkok.topographica.util.Region;
-
 import org.bukkit.Server;
 import org.bukkit.World;
+
+import nl.rutgerkok.topographica.util.Region;
 
 /**
  * Class for saving and loading the rendering queue to/from disk.

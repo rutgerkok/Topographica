@@ -126,7 +126,6 @@ final class LiveServerInfo extends ServerInfo implements Listener {
             return new int[] { vector.getBlockX(), vector.getBlockY(), vector.getBlockZ() };
         }
 
-
         @Override
         public int hashCode() {
             return worldName.hashCode();

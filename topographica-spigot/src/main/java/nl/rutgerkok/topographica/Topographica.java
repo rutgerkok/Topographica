@@ -48,8 +48,8 @@ public class Topographica extends JavaPlugin {
     }
 
     /**
-     * Gets the web world, which contains information on how the rendered world is
-     * presented on the web.
+     * Gets the web world, which contains information on how the rendered world
+     * is presented on the web.
      *
      * @param world
      *            The Minecraft world.

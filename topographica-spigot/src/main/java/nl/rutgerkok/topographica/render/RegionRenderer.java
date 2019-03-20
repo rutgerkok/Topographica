@@ -8,14 +8,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
+import org.bukkit.World;
+
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.scheduler.Computation;
 import nl.rutgerkok.topographica.scheduler.TGRunnable;
 import nl.rutgerkok.topographica.util.Region;
-
-import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.World;
 
 public final class RegionRenderer {
 

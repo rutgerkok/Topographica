@@ -23,6 +23,7 @@ public final class MapLocations {
     public static MapLocation ofBlock(Block block) {
         return MapLocation.of(block.getX(), block.getZ());
     }
+
     /**
      * Creates a map point at the given location. The world of the location is
      * ignored. If you modify the coords of the location, this map point will
@@ -50,6 +51,6 @@ public final class MapLocations {
     }
 
     private MapLocations() {
-    // No instances!
+        // No instances!
     }
 }

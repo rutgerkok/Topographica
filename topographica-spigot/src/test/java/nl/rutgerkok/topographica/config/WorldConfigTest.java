@@ -3,11 +3,11 @@ package nl.rutgerkok.topographica.config;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 import nl.rutgerkok.topographica.util.Region;
 import nl.rutgerkok.topographica.util.StartupLog;
