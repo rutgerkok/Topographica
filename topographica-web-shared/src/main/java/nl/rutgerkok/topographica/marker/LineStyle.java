@@ -67,7 +67,7 @@ public class LineStyle {
      * @return This, for chaining.
      */
     public LineStyle color(Color color) {
-        options.put("color", "#" + Integer.toHexString(color.getRGB()));
+        options.put("color", HtmlColor.getHexString(color));
         options.put("opacity", color.getAlpha() / 256.0);
         return this;
     }
