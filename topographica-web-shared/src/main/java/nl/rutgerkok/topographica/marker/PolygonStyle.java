@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-
 /**
  * Style of a polygon. Note that this class is not thread-safe: you should keep
  * instances in one thread.
@@ -50,9 +49,9 @@ public final class PolygonStyle {
     }
 
     /**
-     * Sets whether the shape must be filled. Note: {@link #fillRule(FillRule)} and
-     * {@link #fillColor(Color)} will automatically update call this method, so
-     * calling this method yourself shouldn't be necessary.
+     * Sets whether the shape must be filled. Note: {@link #fillRule(FillRule)}
+     * and {@link #fillColor(Color)} will automatically update call this method,
+     * so calling this method yourself shouldn't be necessary.
      *
      * @param fill
      *            True if the shape must be filled, false otherwise.
@@ -74,7 +73,7 @@ public final class PolygonStyle {
      */
     public PolygonStyle fillColor(Color color) {
         fill(color.getAlpha() > 0);
-        options.put("fillColor", "#" + Integer.toHexString(color.getRGB()));
+        options.put("fillColor", HtmlColor.getHexString(color));
         options.put("fillOpacity", color.getAlpha() / 256.0);
         return this;
     }
@@ -94,16 +93,17 @@ public final class PolygonStyle {
     }
 
     /**
-     * Sets whether a stroke must be drawn. Note: the {@link #strokeColor(Color)}
-     * and {@link #strokeWidth(double)} methods will automatically update this
-     * value, so calling this method usually isn't necessary.
+     * Sets whether a stroke must be drawn. Note: the
+     * {@link #strokeColor(Color)} and {@link #strokeWidth(double)} methods will
+     * automatically update this value, so calling this method usually isn't
+     * necessary.
      *
      * @param stroke
      *            True if a stroke is drawn, false otherwise.
      * @return This, for chaining.
      */
     public PolygonStyle stroke(boolean stroke) {
-        options.put("stoke", stroke);
+        options.put("stroke", stroke);
         return this;
     }
 
@@ -116,7 +116,7 @@ public final class PolygonStyle {
      */
     public PolygonStyle strokeColor(Color color) {
         stroke(color.getAlpha() > 0);
-        options.put("color", "#" + Integer.toHexString(color.getRGB()));
+        options.put("color", HtmlColor.getHexString(color));
         options.put("opacity", color.getAlpha() / 256.0);
         return this;
     }
