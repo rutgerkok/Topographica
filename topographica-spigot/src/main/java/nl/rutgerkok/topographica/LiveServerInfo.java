@@ -3,13 +3,14 @@ package nl.rutgerkok.topographica;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -26,13 +27,11 @@ import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import net.md_5.bungee.api.ChatColor;
+
 import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.config.WorldConfig;
-import nl.rutgerkok.topographica.marker.Marker;
+import nl.rutgerkok.topographica.marker.MarkerCollection;
 import nl.rutgerkok.topographica.webserver.IntPair;
 import nl.rutgerkok.topographica.webserver.ServerInfo;
 import nl.rutgerkok.topographica.webserver.WebPlayer;
@@ -79,7 +78,7 @@ final class LiveServerInfo extends ServerInfo implements Listener {
 
     private static class CachedWorld implements WebWorld {
         private final String worldName;
-        private final List<Marker> markers = new CopyOnWriteArrayList<>();
+        private final MarkerCollection markers = new MarkerCollection();
         private final WorldConfig worldConfig;
 
         CachedWorld(World world, WorldConfig worldConfig) {
@@ -116,7 +115,7 @@ final class LiveServerInfo extends ServerInfo implements Listener {
         }
 
         @Override
-        public List<Marker> getMarkers() {
+        public MarkerCollection getMarkers() {
             return markers;
         }
 

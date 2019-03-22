@@ -1,8 +1,6 @@
 package nl.rutgerkok.topographica.webserver;
 
-import java.util.List;
-
-import nl.rutgerkok.topographica.marker.Marker;
+import nl.rutgerkok.topographica.marker.MarkerCollection;
 
 /**
  * A world, as seen by the web server.
@@ -29,7 +27,7 @@ public interface WebWorld {
      *
      * @return The markers.
      */
-    List<Marker> getMarkers();
+    MarkerCollection getMarkers();
 
     /**
      * Gets the block origin of the world, for example [0, 64, 0].

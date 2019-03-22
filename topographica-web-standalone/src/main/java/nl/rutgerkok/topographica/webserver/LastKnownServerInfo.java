@@ -13,12 +13,13 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import nl.rutgerkok.topographica.marker.Marker;
+import nl.rutgerkok.topographica.marker.MarkerCollection;
 
 final class LastKnownServerInfo extends ServerInfo {
 
     private static class CachedWorld implements WebWorld {
         private final String name;
+        private final MarkerCollection markers = new MarkerCollection();
 
         CachedWorld(String name) {
             this.name = Objects.requireNonNull(name, "name");
@@ -36,8 +37,8 @@ final class LastKnownServerInfo extends ServerInfo {
         }
 
         @Override
-        public List<Marker> getMarkers() {
-            return Collections.emptyList();
+        public MarkerCollection getMarkers() {
+            return markers;
         }
 
         @Override
