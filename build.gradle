@@ -67,6 +67,7 @@ project(':topographica-web-shared') {
         testCompile 'com.google.guava:guava:18.0'
         compileOnly 'io.netty:netty-all:4.1.19.Final'
         compileOnly 'com.googlecode.json-simple:json-simple:1.1.1'
+        testCompile 'com.googlecode.json-simple:json-simple:1.1.1'
     }
 }
 

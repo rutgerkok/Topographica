@@ -53,7 +53,7 @@ public final class MarkerCollection implements Iterable<Marker> {
 
             @Override
             public Marker next() {
-                if (currentArray == null || posInArray >= currentArray.length) {
+                if (currentArray == null || posInArray + 1 >= currentArray.length) {
                     // Go to next array
                     posInArray = 0;
                     currentArray = arrayIterator.next();
