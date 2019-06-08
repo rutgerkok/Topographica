@@ -14,8 +14,8 @@ buildscript {
         jcenter() // For Shadow
     }
     dependencies {
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.6.0"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.23.0"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
     }
 }
 
