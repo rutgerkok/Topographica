@@ -18,8 +18,7 @@ public final class PolygonStyle {
      * MDN</a>.
      *
      */
-    enum FillRule
-    {
+    enum FillRule {
         /**
          * Fill all pixels that are inside the shape, after calculating the
          * whole shape.

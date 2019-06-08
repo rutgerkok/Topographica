@@ -6,12 +6,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * A marker, displayed on the map.

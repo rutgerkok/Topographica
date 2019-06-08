@@ -20,8 +20,7 @@ public abstract class TGRunnable<T> {
     /**
      * Type of computation.
      */
-    public enum Type
-    {
+    public enum Type {
         /**
          * Runs every tick on the server thread.
          */

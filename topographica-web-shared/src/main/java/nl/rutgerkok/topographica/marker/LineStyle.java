@@ -12,8 +12,7 @@ public class LineStyle {
      * MDN</a> for more information.
      *
      */
-    enum LineCap
-    {
+    enum LineCap {
         /**
          * Line ends abruptly.
          */
@@ -34,8 +33,7 @@ public class LineStyle {
      * MDN</a> for more information.
      *
      */
-    enum LineJoin
-    {
+    enum LineJoin {
         ARCS,
         BEVEL,
         MITER,
