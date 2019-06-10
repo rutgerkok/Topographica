@@ -11,7 +11,7 @@ function setupMap(id) {
         zoom: -1,
         center: coordsToLatLong(worldOrigin[0], worldOrigin[1])
     });
-    L.tileLayer('/images/' + worldFolderName + '/zoom{z}/r.{x}.{y}.jpg', {
+    L.tileLayer('/images/' + worldFolderName + '/zoom{z}/r.{x}.{y}.png', {
         minZoom: -1,
         maxZoom: -1,
         attribution: '@PROJECT_NAME@',

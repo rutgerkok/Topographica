@@ -181,7 +181,7 @@ public class WorldRenderer extends ComputationFactory<DrawnRegion> {
     public void handleResult(DrawnRegion image) throws IOException {
         try {
             Path file = this.imageFolder.resolve("zoom-1")
-                    .resolve("r." + image.region.getRegionX() + "." + image.region.getRegionZ() + ".jpg");
+                    .resolve("r." + image.region.getRegionX() + "." + image.region.getRegionZ() + ".png");
 
             image.canvas.outputAndReset(file);
         } finally {
