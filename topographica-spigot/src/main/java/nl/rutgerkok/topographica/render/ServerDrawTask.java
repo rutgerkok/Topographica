@@ -104,13 +104,11 @@ public class ServerDrawTask implements Runnable {
                 throw new RuntimeException(e.getCause());
             }
         }
+    }
 
-        private void sleepSeconds(double seconds) {
-            try {
-                Thread.sleep((long) (seconds * 1000));
-            } catch (InterruptedException e) {
-                // Ignore
-            }
+    private static void sleepSeconds(double seconds) throws InterruptedException {
+        if (seconds > 0) {
+            Thread.sleep((long) (seconds * 1000));
         }
     }
 
@@ -178,9 +176,8 @@ public class ServerDrawTask implements Runnable {
 
                 try {
                     // Sleep between world renders, so that our infinite loop
-                    // doesn't take forever
-                    // to execute
-                    Thread.sleep((long) (config.getTimingsConfig().getPauseSecondsAfterRenderPass() * 1000));
+                    // doesn't take all CPU
+                    sleepSeconds(config.getTimingsConfig().getPauseSecondsAfterRenderPass());
                 } catch (InterruptedException e) {
                     if (mustStop) {
                         break;

@@ -15,9 +15,9 @@ public final class TimingsConfig {
     TimingsConfig(ConfigurationSection config, StartupLog log) {
         double pauseSecondsAfterRenderPass = config.getDouble("pause-seconds-after-render-pass");
         double pauseSecondsAfterChunkLoad = config.getDouble("pause-seconds-after-chunk-load");
-        if (pauseSecondsAfterRenderPass < 0) {
-            log.warn("pause-seconds-after-render-pass was negative, so it was changed to 0");
-            pauseSecondsAfterRenderPass = 0;
+        if (pauseSecondsAfterRenderPass < 0.5) {
+            log.warn("pause-seconds-after-render-pass was too small, so it was changed to 0.5");
+            pauseSecondsAfterRenderPass = 0.5;
         }
         if (pauseSecondsAfterChunkLoad < 0) {
             log.warn("pause-seconds-after-chunk-load was negative, so it was changed to 0");
