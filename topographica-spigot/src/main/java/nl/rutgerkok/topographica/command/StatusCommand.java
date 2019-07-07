@@ -2,33 +2,40 @@ package nl.rutgerkok.topographica.command;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.UUID;
 
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 
-import nl.rutgerkok.topographica.render.ServerRenderer;
-import nl.rutgerkok.topographica.render.WorldRenderer;
+import nl.rutgerkok.topographica.render.ServerTaskList;
+import nl.rutgerkok.topographica.render.WorldTaskList;
 
 final class StatusCommand extends SubCommand {
 
-    private final ServerRenderer serverRenderer;
+    private final ServerTaskList serverRenderer;
 
-    public StatusCommand(ServerRenderer serverRenderer) {
+    public StatusCommand(ServerTaskList serverRenderer) {
         this.serverRenderer = Objects.requireNonNull(serverRenderer, "serverRenderer");
     }
 
     @Override
     void execute(CommandSender sender, String baseLabel, List<String> args) throws CommandUsageException {
         requireMinMaxSize(args, 0, 0);
-        List<WorldRenderer> renderers = serverRenderer.getActiveRenderers();
+        Map<UUID, WorldTaskList> renderers = serverRenderer.getActiveTaskLists();
         sender.sendMessage(HEADER_COLOR + "Active renderers:");
         if (renderers.isEmpty()) {
             sender.sendMessage(MAIN_COLOR + "No active renderers.");
         }
-        for (int i = 0; i < renderers.size(); i++) {
-            WorldRenderer renderer = renderers.get(i);
-            sender.sendMessage(MAIN_COLOR + (i + 1) + ". World \"" + renderer.getWorld().getName() + "\": "
-                    + renderer.getQueueSize() + " regions in queue");
+        int i = 1;
+        for (Entry<UUID, WorldTaskList> entry : renderers.entrySet()) {
+            UUID worldId = entry.getKey();
+            WorldTaskList taskList = entry.getValue();
+            sender.sendMessage(MAIN_COLOR + i + ". World \"" + getWorldName(sender, worldId) + "\": "
+                    + taskList.calculateRegionsInQueue() + " regions in queue");
+            i++;
         }
     }
 
@@ -40,6 +47,14 @@ final class StatusCommand extends SubCommand {
     @Override
     String getSyntax() {
         return "";
+    }
+
+    private String getWorldName(CommandSender sender, UUID worldId) {
+        World world = sender.getServer().getWorld(worldId);
+        if (world == null) {
+            return worldId.toString();
+        }
+        return world.getName();
     }
 
     @Override

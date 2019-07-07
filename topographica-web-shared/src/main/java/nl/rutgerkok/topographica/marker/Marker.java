@@ -181,10 +181,25 @@ public class Marker implements JSONStreamAware {
      *            Final point.
      * @return The rectangle.
      */
-    public static Marker rectangle(MapLocation lowestXZ, MapLocation highestXZ) {
+    public static Polygon rectangle(MapLocation lowestXZ, MapLocation highestXZ) {
         MapLocation lowestXHighestZ = MapLocation.of(lowestXZ.getX(), highestXZ.getZ());
         MapLocation highestXLowestZ = MapLocation.of(highestXZ.getX(), lowestXZ.getZ());
         return polygon(lowestXZ, highestXLowestZ, highestXZ, lowestXHighestZ);
+    }
+
+    /**
+     * A square.
+     *
+     * @param center
+     *            Center of the square.
+     * @param halfWidth
+     *            How many pixels the square extends in each direction.
+     * @return The square.
+     */
+    public static Polygon square(final MapLocation center, final int halfWidth) {
+        final MapLocation lowest = MapLocation.of(center.getX() - halfWidth, center.getZ() - halfWidth);
+        final MapLocation highest = MapLocation.of(center.getX() + halfWidth, center.getZ() + halfWidth);
+        return rectangle(lowest, highest);
     }
 
     protected final String method;

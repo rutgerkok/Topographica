@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -16,6 +17,7 @@ import java.util.logging.Logger;
 import org.bukkit.Server;
 import org.bukkit.World;
 
+import nl.rutgerkok.topographica.render.WorldTaskList.DrawInstruction;
 import nl.rutgerkok.topographica.util.Region;
 
 /**
@@ -52,7 +54,7 @@ public final class ChunkQueuePersistance {
      * @param renderer
      *            The renderer.
      */
-    public void loadFromQueue(Server server, ServerRenderer renderer) {
+    public void loadFromQueue(Server server, ServerTaskList renderer) {
         try (BufferedReader reader = Files.newBufferedReader(savedQueueFile, StandardCharsets.UTF_8)) {
             String line;
             World world = null;
@@ -73,8 +75,8 @@ public final class ChunkQueuePersistance {
                 if (world == null) {
                     throw new IOException("No world declared for line \"" + line + "\"");
                 }
-                Region region = parseLine(line);
-                renderer.askToRenderRegion(world, region);
+                DrawInstruction drawInstruction = parseLine(line);
+                renderer.askToRender(world, drawInstruction);
             }
             Files.deleteIfExists(savedQueueFile);
         } catch (NoSuchFileException e) {
@@ -85,15 +87,24 @@ public final class ChunkQueuePersistance {
         }
     }
 
-    private Region parseLine(String line) throws IOException {
+    private DrawInstruction parseLine(String line) throws IOException {
+        String[] split = line.split(" ");
+        boolean isRegion = true;
+        if (split.length == 2) {
+            line = split[1];
+            isRegion = split[0].equals("region");
+        }
         int commaIndex = line.indexOf(',');
         if (commaIndex == -1) {
             throw new IOException("No comma on line \"" + line + "\"");
         }
         try {
-            int regionX = Integer.parseInt(line.substring(0, commaIndex));
-            int regionZ = Integer.parseInt(line.substring(commaIndex + 1));
-            return Region.of(regionX, regionZ);
+            int x = Integer.parseInt(line.substring(0, commaIndex));
+            int z = Integer.parseInt(line.substring(commaIndex + 1));
+            if (isRegion) {
+                return DrawInstruction.ofRegion(Region.of(x, z));
+            }
+            return DrawInstruction.ofChunk(x, z);
         } catch (NumberFormatException e) {
             throw new IOException("Cannot read two number on line \"" + line + "\"");
         }
@@ -106,18 +117,24 @@ public final class ChunkQueuePersistance {
      * @param renderer
      *            The renderer.
      */
-    public void saveRegionQueue(ServerRenderer renderer) {
+    public void saveRegionQueue(ServerTaskList renderer) {
         try {
             Files.createDirectories(savedQueueFile.getParent());
             try (BufferedWriter writer = Files.newBufferedWriter(savedQueueFile,
                     StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-                for (WorldRenderer worldRenderer : renderer.getActiveRenderers()) {
-                    writeWorldHeader(writer, worldRenderer);
+                for (Entry<UUID, WorldTaskList> entry : renderer.getActiveTaskLists().entrySet()) {
+                    WorldTaskList taskList = entry.getValue();
+                    writeWorldHeader(writer, entry.getKey(), taskList);
 
-                    for (Region region : worldRenderer.getQueueSnapshot()) {
-                        writer.write(String.valueOf(region.getRegionX()));
+                    for (DrawInstruction region : taskList.getQueueSnapshot()) {
+                        if (region.isRegion) {
+                            writer.write("region ");
+                        } else {
+                            writer.write("chunk ");
+                        }
+                        writer.write(String.valueOf(region.x));
                         writer.write(',');
-                        writer.write(String.valueOf(region.getRegionZ()));
+                        writer.write(String.valueOf(region.z));
                         writer.newLine();
                     }
                 }
@@ -127,14 +144,9 @@ public final class ChunkQueuePersistance {
         }
     }
 
-    private void writeWorldHeader(BufferedWriter writer, WorldRenderer worldRenderer) throws IOException {
-        World world = worldRenderer.getWorld();
+    private void writeWorldHeader(BufferedWriter writer, UUID world, WorldTaskList worldRenderer) throws IOException {
         writer.write(WORLD_PREFIX);
-        writer.write(world.getUID().toString());
-        writer.newLine();
-        writer.write("# The last-known name of this world was \"");
-        writer.write(world.getName());
-        writer.write('"');
+        writer.write(world.toString());
         writer.newLine();
     }
 

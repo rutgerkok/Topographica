@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,8 +15,9 @@ import nl.rutgerkok.topographica.config.Config;
 import nl.rutgerkok.topographica.event.BlockListener;
 import nl.rutgerkok.topographica.event.LogToPlayerSender;
 import nl.rutgerkok.topographica.render.ChunkQueuePersistance;
-import nl.rutgerkok.topographica.render.ServerRenderer;
-import nl.rutgerkok.topographica.scheduler.Scheduler;
+import nl.rutgerkok.topographica.render.ServerDrawTask;
+import nl.rutgerkok.topographica.render.ServerTaskList;
+import nl.rutgerkok.topographica.util.ServerThreadGetter;
 import nl.rutgerkok.topographica.util.StartupLog;
 import nl.rutgerkok.topographica.webserver.ServerInfo;
 import nl.rutgerkok.topographica.webserver.WebServer;
@@ -24,11 +26,11 @@ import nl.rutgerkok.topographica.webserver.WebWorld;
 public class Topographica extends JavaPlugin {
 
     private WebServer webServer;
-    private Scheduler scheduler;
-    private ServerRenderer renderer;
+    private ServerTaskList serverTaskList;
     private Config config;
     private ChunkQueuePersistance chunkQueuePersistance;
     private LiveServerInfo serverInfo;
+    private ServerDrawTask drawTask;
 
     private WebServer enableWebServer(StartupLog startupLog, Config config, ServerInfo serverInfo) {
         Objects.requireNonNull(startupLog, "startupLog");
@@ -69,11 +71,11 @@ public class Topographica extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        chunkQueuePersistance.saveRegionQueue(renderer);
+        chunkQueuePersistance.saveRegionQueue(serverTaskList);
+        drawTask.requestStop();
         if (webServer != null) {
             webServer.disable();
         }
-        scheduler.stopAll();
     }
 
     @Override
@@ -81,17 +83,22 @@ public class Topographica extends JavaPlugin {
         Path savedQueueFile = this.getDataFolder().toPath().resolve("pending_regions.txt");
 
         StartupLog startupLog = StartupLog.wrapping(getLogger());
-        scheduler = new Scheduler(this);
         config = loadConfigs(startupLog);
         serverInfo = new LiveServerInfo(this, config);
         webServer = enableWebServer(startupLog, config, serverInfo);
-        renderer = new ServerRenderer(scheduler, config);
+        serverTaskList = new ServerTaskList(config);
 
         chunkQueuePersistance = new ChunkQueuePersistance(savedQueueFile, this.getLogger());
-        chunkQueuePersistance.loadFromQueue(getServer(), renderer);
+        chunkQueuePersistance.loadFromQueue(getServer(), serverTaskList);
         new LogToPlayerSender(startupLog, this).sendExistingWarnings().listenForNewPlayers();
-        getServer().getPluginManager().registerEvents(new BlockListener(renderer), this);
-        this.getCommand(this.getName().toLowerCase(Locale.ROOT)).setExecutor(new CommandHandler(renderer));
+        getServer().getPluginManager().registerEvents(new BlockListener(serverTaskList), this);
+        this.getCommand(this.getName().toLowerCase(Locale.ROOT)).setExecutor(new CommandHandler(serverTaskList));
+
+        ServerThreadGetter<Optional<ChunkSnapshot>> getter = callable -> {
+            return getServer().getScheduler().callSyncMethod(this, callable);
+        };
+        drawTask = new ServerDrawTask(serverTaskList, getServer(), getter, config);
+        this.getServer().getScheduler().runTaskAsynchronously(this, drawTask);
     }
 
 }

@@ -15,13 +15,13 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
-import nl.rutgerkok.topographica.render.ServerRenderer;
+import nl.rutgerkok.topographica.render.ServerTaskList;
 
 public final class CommandHandler implements TabExecutor {
 
     private final Map<String, SubCommand> subHandlers;
 
-    public CommandHandler(ServerRenderer serverRenderer) {
+    public CommandHandler(ServerTaskList serverRenderer) {
         this.subHandlers = ImmutableMap.<String, SubCommand>builder()
                 .put("status", new StatusCommand(serverRenderer))
                 .put("fullrender", new FullRenderCommand(serverRenderer))

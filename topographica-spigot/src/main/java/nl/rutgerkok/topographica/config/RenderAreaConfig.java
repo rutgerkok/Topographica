@@ -8,8 +8,6 @@ import static nl.rutgerkok.topographica.util.SizeConstants.REGION_SIZE_BLOCKS_BI
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.util.BlockVector;
 
-import nl.rutgerkok.topographica.util.Region;
-
 /**
  * Class that determines exactly what areas of the world should be rendered.
  *
@@ -88,11 +86,13 @@ public final class RenderAreaConfig {
      * Checks if the specified region should be rendered according to the
      * settings of this world.
      *
-     * @param region
-     *            The region.
+     * @param regionX
+     *            The region x.
+     * @param regionZ
+     *            The region z.
      * @return True if it should be rendered, false otherwise.
      */
-    public boolean shouldRenderRegion(Region region) {
+    public boolean shouldRenderRegion(int regionX, int regionZ) {
         if (radius == Integer.MAX_VALUE) {
             return true;
         }
@@ -100,8 +100,8 @@ public final class RenderAreaConfig {
             return false;
         }
 
-        long blockX = region.getRegionX() << REGION_SIZE_BLOCKS_BITS;
-        long blockZ = region.getRegionZ() << REGION_SIZE_BLOCKS_BITS;
+        long blockX = regionX << REGION_SIZE_BLOCKS_BITS;
+        long blockZ = regionZ << REGION_SIZE_BLOCKS_BITS;
         if (blockX < centerX) {
             blockX += Math.min(REGION_SIZE_BLOCKS - 1, centerX - blockX);
         }

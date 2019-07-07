@@ -9,13 +9,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
-import nl.rutgerkok.topographica.render.ServerRenderer;
+import nl.rutgerkok.topographica.render.ServerTaskList;
 
 public final class BlockListener implements Listener {
 
-    private final ServerRenderer renderer;
+    private final ServerTaskList renderer;
 
-    public BlockListener(ServerRenderer renderer) {
+    public BlockListener(ServerTaskList renderer) {
         this.renderer = Objects.requireNonNull(renderer);
     }
 

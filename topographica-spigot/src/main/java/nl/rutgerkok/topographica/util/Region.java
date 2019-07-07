@@ -23,6 +23,19 @@ public final class Region {
         return of(block.getX() >> 9, block.getZ() >> 9);
     }
 
+    /**
+     * Gets the region that holds the given chunk.
+     *
+     * @param chunkX
+     *            The chunk x.
+     * @param chunkZ
+     *            The chunk x.
+     * @return The region.
+     */
+    public static Region ofChunk(int chunkX, int chunkZ) {
+        return new Region(chunkX >> 5, chunkZ >> 5);
+    }
+
     private final int regionX;
     private final int regionZ;
 
@@ -33,17 +46,22 @@ public final class Region {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Region other = (Region) obj;
-        if (regionX != other.regionX)
+        if (regionX != other.regionX) {
             return false;
-        if (regionZ != other.regionZ)
+        }
+        if (regionZ != other.regionZ) {
             return false;
+        }
         return true;
     }
 

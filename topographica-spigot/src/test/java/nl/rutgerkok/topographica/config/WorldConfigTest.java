@@ -9,7 +9,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.Test;
 
-import nl.rutgerkok.topographica.util.Region;
 import nl.rutgerkok.topographica.util.StartupLog;
 
 public class WorldConfigTest {
@@ -23,9 +22,9 @@ public class WorldConfigTest {
         section.createSection("colors", ImmutableMap.of("AIR", "#000000"));
         RenderAreaConfig config = new WorldConfig(null, "test", section, StartupLog.discarding()).getRenderArea();
 
-        assertTrue(config.shouldRenderRegion(Region.of(0, 0)));
-        assertTrue(config.shouldRenderRegion(Region.of(1, 0)));
-        assertFalse(config.shouldRenderRegion(Region.of(10, 0)));
+        assertTrue(config.shouldRenderRegion(0, 0));
+        assertTrue(config.shouldRenderRegion(1, 0));
+        assertFalse(config.shouldRenderRegion(10, 0));
 
         assertTrue(config.shouldRenderChunk(11, -26));
     }
@@ -39,6 +38,6 @@ public class WorldConfigTest {
         section.createSection("colors", ImmutableMap.of("AIR", "#000000"));
         RenderAreaConfig config = new WorldConfig(null, "test", section, StartupLog.discarding()).getRenderArea();
 
-        assertTrue(config.shouldRenderRegion(Region.of(0, 0)));
+        assertTrue(config.shouldRenderRegion(0, 0));
     }
 }

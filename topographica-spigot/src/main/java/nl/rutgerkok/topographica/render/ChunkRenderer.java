@@ -14,7 +14,7 @@ import org.bukkit.Material;
 import nl.rutgerkok.topographica.config.ColorConfig;
 import nl.rutgerkok.topographica.config.WorldConfig;
 
-public class ChunkRenderer {
+class ChunkRenderer {
 
     /**
      * Creates a chunk renderer.

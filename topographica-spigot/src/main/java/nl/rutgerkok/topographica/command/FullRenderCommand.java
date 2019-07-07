@@ -1,19 +1,25 @@
 package nl.rutgerkok.topographica.command;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import nl.rutgerkok.topographica.render.ServerRenderer;
+import nl.rutgerkok.topographica.render.ServerTaskList;
+import nl.rutgerkok.topographica.util.Chat;
+import nl.rutgerkok.topographica.util.RegionFilesFinder;
 
 final class FullRenderCommand extends SubCommand {
 
-    private final ServerRenderer serverRenderer;
+    private final ServerTaskList serverRenderer;
 
-    public FullRenderCommand(ServerRenderer serverRenderer) {
+    public FullRenderCommand(ServerTaskList serverRenderer) {
         this.serverRenderer = Objects.requireNonNull(serverRenderer, "serverRenderer");
     }
 
@@ -28,7 +34,8 @@ final class FullRenderCommand extends SubCommand {
                 return;
             }
         }
-        serverRenderer.renderAllRegionsAsync(world);
+
+        renderWorldAsync(sender, world);
         sender.sendMessage("Starting full render of world " + world.getName() + ". Use the \"" + baseLabel
                 + " status\" command to keep track of the progress.");
     }
@@ -41,6 +48,19 @@ final class FullRenderCommand extends SubCommand {
     @Override
     String getSyntax() {
         return "[worldname]";
+    }
+
+    private void renderWorldAsync(CommandSender sender, World world) {
+        Plugin plugin = JavaPlugin.getProvidingPlugin(getClass());
+        sender.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                RegionFilesFinder.getRegions(world)
+                        .forEach(region -> serverRenderer.askToRenderRegion(world, region));
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to find regions in world " + world.getName(), e);
+                sender.sendMessage(Chat.WARNING_COLOR + "Failed to find regions in world. " + e.getMessage());
+            }
+        });
     }
 
     @Override
