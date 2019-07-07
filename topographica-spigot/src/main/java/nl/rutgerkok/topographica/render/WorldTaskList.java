@@ -204,7 +204,11 @@ public class WorldTaskList {
                     it.remove();
                 }
             }
-            canvas.writeToFile(saveFile);
+
+            if (!context.mustStop()) {
+                // Only write if task hasn't been aborted
+                canvas.writeToFile(saveFile);
+            }
         }
 
         @Override
@@ -295,6 +299,10 @@ public class WorldTaskList {
                     return;
                 }
                 tree.drawAll(context);
+                if (context.mustStop()) {
+                    return;
+                }
+
                 if (tree.isEmpty()) {
                     // If it's still empty (read: no other thread has added new
                     // tasks in between),
@@ -347,7 +355,9 @@ public class WorldTaskList {
             super.drawAll(context);
 
             // Draw zoomed out image
-            drawZoomedOutImage(context);
+            if (!context.mustStop()) {
+                drawZoomedOutImage(context);
+            }
         }
 
         private void drawZoomedOutImage(DrawContext context) throws IOException {

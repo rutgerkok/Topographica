@@ -7,10 +7,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -77,28 +77,15 @@ public class ServerDrawTask implements Runnable {
 
         @Override
         public Optional<ChunkSnapshot> getChunk(int chunkX, int chunkZ) {
-            Future<ChunkResult> future = serverThreadGetter.runOnServerThread(() -> {
-                // We need to get chunks on the server threads
-                boolean alreadyLoaded = world.isChunkLoaded(chunkX, chunkZ);
-
-                if (world.loadChunk(chunkX, chunkZ, false)) {
-                    Chunk chunk = world.getChunkAt(chunkX, chunkZ);
-                    ChunkSnapshot snapshot = chunk.getChunkSnapshot(true, false, false);
-                    if (!alreadyLoaded) {
-                        world.unloadChunkRequest(chunkX, chunkZ);
-                    }
-                    return new ChunkResult(Optional.of(snapshot), alreadyLoaded);
-                }
-                return new ChunkResult(Optional.empty(), false);
-            });
+            Future<ChunkResult> future = serverThreadGetter.getChunk(world, chunkX, chunkZ);
 
             try {
                 ChunkResult result = future.get();
                 if (!result.alreadyLoaded) {
-                    sleepSeconds(config.getTimingsConfig().getPauseSecondsAfterChunkLoad());
+                    sleepSeconds(config.getTimingsConfig().getPauseSecondsAfterChunkLoad(result.playersOnline));
                 }
                 return result.snapshot;
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | CancellationException e) {
                 return Optional.empty();
             } catch (ExecutionException e) {
                 throw new RuntimeException(e.getCause());

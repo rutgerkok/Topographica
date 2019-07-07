@@ -70,8 +70,8 @@ public class Topographica extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        chunkQueuePersistance.saveRegionQueue(serverTaskList);
         drawTask.requestStop();
+        chunkQueuePersistance.saveRegionQueue(serverTaskList);
         if (webServer != null) {
             webServer.disable();
         }
@@ -93,9 +93,7 @@ public class Topographica extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BlockListener(serverTaskList), this);
         this.getCommand(this.getName().toLowerCase(Locale.ROOT)).setExecutor(new CommandHandler(serverTaskList));
 
-        ChunkSnapshotGetter getter = callable -> {
-            return getServer().getScheduler().callSyncMethod(this, callable);
-        };
+        ChunkSnapshotGetter getter = new ChunkSnapshotGetter(this);
         drawTask = new ServerDrawTask(serverTaskList, getServer(), getter, config);
         this.getServer().getScheduler().runTaskAsynchronously(this, drawTask);
     }

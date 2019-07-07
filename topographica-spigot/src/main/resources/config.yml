@@ -13,6 +13,10 @@
 #   pause-seconds-after-chunk-load: 0.5
 #     After the plugin needed to load a chunk, it will pause this amount of seconds before
 #     continuing rendering.
+#   no-pause-after-chunk-load-when-nobody-is-online: true
+#     Set this to true to disable the chunk loading pause when there is nobody online. This
+#     speeds up rendering when the server is empty.
+#   
 # web-server:
 #   Here the internal web server is configured.
 #   port: 
@@ -36,6 +40,7 @@
 timings:
   pause-seconds-after-render-pass: 60
   pause-seconds-after-chunk-load: 0.5
+  no-pause-after-chunk-load-when-nobody-is-online: true
 web-server:
   port: 8088
   web-root: web
