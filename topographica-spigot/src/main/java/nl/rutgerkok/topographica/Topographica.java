@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,7 +16,7 @@ import nl.rutgerkok.topographica.event.LogToPlayerSender;
 import nl.rutgerkok.topographica.render.ChunkQueuePersistance;
 import nl.rutgerkok.topographica.render.ServerDrawTask;
 import nl.rutgerkok.topographica.render.ServerTaskList;
-import nl.rutgerkok.topographica.util.ServerThreadGetter;
+import nl.rutgerkok.topographica.util.ChunkSnapshotGetter;
 import nl.rutgerkok.topographica.util.StartupLog;
 import nl.rutgerkok.topographica.webserver.ServerInfo;
 import nl.rutgerkok.topographica.webserver.WebServer;
@@ -94,7 +93,7 @@ public class Topographica extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BlockListener(serverTaskList), this);
         this.getCommand(this.getName().toLowerCase(Locale.ROOT)).setExecutor(new CommandHandler(serverTaskList));
 
-        ServerThreadGetter<Optional<ChunkSnapshot>> getter = callable -> {
+        ChunkSnapshotGetter getter = callable -> {
             return getServer().getScheduler().callSyncMethod(this, callable);
         };
         drawTask = new ServerDrawTask(serverTaskList, getServer(), getter, config);

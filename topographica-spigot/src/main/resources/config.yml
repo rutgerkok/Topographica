@@ -3,6 +3,16 @@
 # EXPLANATION OF THE SETTINGS
 # ... scroll down for the actual settings ...
 # 
+# timings:
+#   These settings are used to make the plugin use less server resources.
+#   The higher the numbers, the more time the server has to do other things,
+#   and the slower the map will update.
+#   pause-seconds-after-render-pass: 60
+#     After everything on the server is rendered, the plugin will wait this amount of time
+#     before starting a new render pass.
+#   pause-seconds-after-chunk-load: 0.5
+#     After the plugin needed to load a chunk, it will pause this amount of seconds before
+#     continuing rendering.
 # web-server:
 #   Here the internal web server is configured.
 #   port: 
@@ -21,14 +31,11 @@
 #   worlds that do not have their own settings. The most important setting is
 #   the radius. The radius is set in blocks, and controls how much of the world
 #   is rendered around the center. A radius of 0 disables the map for that world.
-# 
-#   The setting max-blocking-time-nanoseconds-per-tick specifies for how long 
-#   the plugin may block the whole server (in technical terms: run on the main
-#   thread). The default value is 1 ms = 1000000 ns. A tick normally takes up to
-#   50 ms, so there is still at least 49 ms available for all other processes on
-#   the server. Increase this value to increase map rendering speed.
 #
 # ACTUAL SETTINGS BELOW
+timings:
+  pause-seconds-after-render-pass: 60
+  pause-seconds-after-chunk-load: 0.5
 web-server:
   port: 8088
   web-root: web

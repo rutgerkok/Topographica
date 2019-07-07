@@ -16,38 +16,34 @@ import org.bukkit.Server;
 import org.bukkit.World;
 
 import nl.rutgerkok.topographica.config.Config;
-import nl.rutgerkok.topographica.config.RenderAreaConfig;
 import nl.rutgerkok.topographica.config.WorldConfig;
 import nl.rutgerkok.topographica.render.WorldTaskList.DrawContext;
+import nl.rutgerkok.topographica.util.ChunkSnapshotGetter;
+import nl.rutgerkok.topographica.util.ChunkSnapshotGetter.ChunkResult;
 import nl.rutgerkok.topographica.util.Coordinate;
-import nl.rutgerkok.topographica.util.ServerThreadGetter;
 
 /**
  * A task that runs forever and draws everything.
  *
  */
 public class ServerDrawTask implements Runnable {
+
+
     private static class RenderingDrawContext implements DrawContext {
 
         private volatile boolean mustStop = false;
         private final ChunkGetter chunkGetter;
         private final Path mapFolder;
         private final ChunkRenderer renderer;
-        private final RenderAreaConfig renderArea;
 
-        public RenderingDrawContext(ChunkGetter chunkGetter, Path mapFolder, ChunkRenderer renderer,
-                RenderAreaConfig renderArea) {
+        RenderingDrawContext(ChunkGetter chunkGetter, Path mapFolder, ChunkRenderer renderer) {
             this.chunkGetter = Objects.requireNonNull(chunkGetter, "chunkGetter");
             this.mapFolder = Objects.requireNonNull(mapFolder, "mapFolder");
             this.renderer = Objects.requireNonNull(renderer, "renderer");
-            this.renderArea = Objects.requireNonNull(renderArea, "renderArea");
         }
 
         @Override
         public void drawChunk(Canvas canvas, int chunkX, int chunkZ) {
-            if (!renderArea.shouldRenderChunk(chunkX, chunkZ)) {
-                return;
-            }
             chunkGetter.getChunk(chunkX, chunkZ).ifPresent(chunk -> renderer.render(chunk, canvas));
         }
 
@@ -81,7 +77,8 @@ public class ServerDrawTask implements Runnable {
 
         @Override
         public Optional<ChunkSnapshot> getChunk(int chunkX, int chunkZ) {
-            Future<Optional<ChunkSnapshot>> future = serverThreadGetter.runOnServerThread(() -> {
+            Future<ChunkResult> future = serverThreadGetter.runOnServerThread(() -> {
+                // We need to get chunks on the server threads
                 boolean alreadyLoaded = world.isChunkLoaded(chunkX, chunkZ);
 
                 if (world.loadChunk(chunkX, chunkZ, false)) {
@@ -90,18 +87,29 @@ public class ServerDrawTask implements Runnable {
                     if (!alreadyLoaded) {
                         world.unloadChunkRequest(chunkX, chunkZ);
                     }
-                    return Optional.of(snapshot);
+                    return new ChunkResult(Optional.of(snapshot), alreadyLoaded);
                 }
-                return Optional.empty();
-
+                return new ChunkResult(Optional.empty(), false);
             });
 
             try {
-                return future.get();
+                ChunkResult result = future.get();
+                if (!result.alreadyLoaded) {
+                    sleepSeconds(config.getTimingsConfig().getPauseSecondsAfterChunkLoad());
+                }
+                return result.snapshot;
             } catch (InterruptedException e) {
                 return Optional.empty();
             } catch (ExecutionException e) {
                 throw new RuntimeException(e.getCause());
+            }
+        }
+
+        private void sleepSeconds(double seconds) {
+            try {
+                Thread.sleep((long) (seconds * 1000));
+            } catch (InterruptedException e) {
+                // Ignore
             }
         }
     }
@@ -109,7 +117,7 @@ public class ServerDrawTask implements Runnable {
     private final ServerTaskList serverTaskList;
     private final Config config;
     private final Server server;
-    private final ServerThreadGetter<Optional<ChunkSnapshot>> serverThreadGetter;
+    private final ChunkSnapshotGetter serverThreadGetter;
 
     /**
      * May be null.
@@ -118,7 +126,7 @@ public class ServerDrawTask implements Runnable {
     private volatile boolean mustStop = false;
 
     public ServerDrawTask(ServerTaskList serverTaskList, Server server,
-            ServerThreadGetter<Optional<ChunkSnapshot>> serverThreadGetter, Config config) {
+            ChunkSnapshotGetter serverThreadGetter, Config config) {
         this.serverTaskList = Objects.requireNonNull(serverTaskList, "serverTaskList");
         this.server = Objects.requireNonNull(server, "server");
         this.serverThreadGetter = Objects.requireNonNull(serverThreadGetter, "serverThreadGetter");
@@ -152,8 +160,7 @@ public class ServerDrawTask implements Runnable {
                 ChunkGetter chunkGetter = new SimpleChunkGetter(world);
                 ChunkRenderer chunkRenderer = new ChunkRenderer(worldConfig);
                 Path folder = config.getWebConfig().getImagesFolder().resolve(world.getName());
-                RenderingDrawContext context = new RenderingDrawContext(chunkGetter, folder, chunkRenderer,
-                        worldConfig.getRenderArea());
+                RenderingDrawContext context = new RenderingDrawContext(chunkGetter, folder, chunkRenderer);
 
                 currentContext = context;
                 if (mustStop) {
@@ -173,7 +180,7 @@ public class ServerDrawTask implements Runnable {
                     // Sleep between world renders, so that our infinite loop
                     // doesn't take forever
                     // to execute
-                    Thread.sleep(1000);
+                    Thread.sleep((long) (config.getTimingsConfig().getPauseSecondsAfterRenderPass() * 1000));
                 } catch (InterruptedException e) {
                     if (mustStop) {
                         break;

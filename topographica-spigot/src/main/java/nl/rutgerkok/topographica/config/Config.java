@@ -31,14 +31,21 @@ public final class Config {
 
     private final Map<String, WorldConfig> configsByWorld;
     private final WebConfig webConfig;
+    private final TimingsConfig timingsConfig;
 
     public Config(Server server, FileConfiguration config, Path dataFolder, StartupLog log) {
         this.configsByWorld = getWorldConfigs(server, config, log);
         this.webConfig = new WebConfig(config.getConfigurationSection("web-server"), dataFolder, log);
+        this.timingsConfig = new TimingsConfig(config.getConfigurationSection("timings"), log);
     }
 
-    public WorldConfig getWorldConfig(World world) {
-        return getWorldConfig(world.getName());
+    /**
+     * Gets the configuration for plugin timings.
+     *
+     * @return The configuration.
+     */
+    public TimingsConfig getTimingsConfig() {
+        return timingsConfig;
     }
 
     /**
@@ -64,6 +71,10 @@ public final class Config {
             return configsByWorld.get("default");
         }
         return result;
+    }
+
+    public WorldConfig getWorldConfig(World world) {
+        return getWorldConfig(world.getName());
     }
 
     private Map<String, WorldConfig> getWorldConfigs(Server server, FileConfiguration config, StartupLog log) {
@@ -135,6 +146,7 @@ public final class Config {
     public void write(FileConfiguration to) {
         wipeConfig(to);
 
+        timingsConfig.write(to.createSection("timings"));
         webConfig.write(to.createSection("web-server"));
 
         ConfigurationSection defaultWorldSection = to.createSection("worlds.default");
