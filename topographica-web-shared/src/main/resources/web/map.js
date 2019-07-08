@@ -7,7 +7,6 @@ function setupMap(id) {
 
     map.leafletMap = L.map(id, {
         crs: L.CRS.Simple,
-        zoomControl: false,
         zoom: -1,
         center: coordsToLatLong(worldOrigin[0], worldOrigin[1])
     });
