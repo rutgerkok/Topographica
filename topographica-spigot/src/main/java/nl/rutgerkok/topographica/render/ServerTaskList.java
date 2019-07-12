@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
@@ -50,6 +51,16 @@ public class ServerTaskList {
      */
     public void askToRenderBlock(Block block) {
         askToRender(block.getWorld(), DrawInstruction.ofChunk(block.getX() >> 4, block.getZ() >> 4));
+    }
+
+    /**
+     * Puts the chunk in the queue for rendering.
+     * 
+     * @param chunk
+     *            The chunk.
+     */
+    public void askToRenderChunk(Chunk chunk) {
+        this.askToRender(chunk.getWorld(), DrawInstruction.ofChunk(chunk.getX(), chunk.getZ()));
     }
 
     /**
