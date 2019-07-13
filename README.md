@@ -5,7 +5,7 @@ Live map for Minecraft Spigot servers. View an example map at [mc.marijnk.nl](ht
 * Google-maps like map for your Minecraft server
 * Built-in web server
 * Lightweight; requires almost no RAM for rendering
-* Saves regions as 256x256 px heavily compressed JPG files
+* Saves regions as 256x256 px PNG files
 * Live updating of player positions
 * Automatic updating of tiles
 * Programming API to add markers on the map (bubbles, lines, rectangles, circles, tooltips)
