@@ -172,10 +172,9 @@ public class WorldTaskList {
         @Override
         public void drawAll(DrawContext context) throws IOException {
             Path saveFile = context.getSaveFile(regionCoord, 1);
-            Canvas canvas;
+            Canvas canvas = Canvas.createFromFile(saveFile);
             if (drawAll) {
                 // Drawing all chunks in the region
-                canvas = Canvas.createNew();
                 int regionStartChunkX = regionCoord.x << 5;
                 int regionStartChunkZ = regionCoord.z << 5;
                 for (int localChunkX = 0; localChunkX < 32; localChunkX++) {
@@ -194,7 +193,6 @@ public class WorldTaskList {
                 drawAll = false;
             } else {
                 // Drawing only the specified chunks from the region
-                canvas = Canvas.createFromFile(saveFile);
                 for (Iterator<Coordinate> it = chunks.iterator(); it.hasNext();) {
                     if (context.mustStop()) {
                         return;
