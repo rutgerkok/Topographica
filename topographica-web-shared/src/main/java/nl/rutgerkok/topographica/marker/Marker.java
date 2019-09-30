@@ -1,23 +1,19 @@
 package nl.rutgerkok.topographica.marker;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 
-import com.google.common.collect.ImmutableMap;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONAware;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * A marker, displayed on the map.
  *
  */
-public class Marker implements JSONStreamAware {
+public class Marker implements JsonAware {
 
     /**
      * A line in between points.
@@ -25,8 +21,8 @@ public class Marker implements JSONStreamAware {
      */
     public static class Line extends Marker {
 
-        Line(String method, JSONAware firstParam, ImmutableMap<String, Object> secondParam, HtmlString tooltipOrNull) {
-            super(method, firstParam, secondParam, tooltipOrNull);
+        Line(String method, JsonElement element, JsonObject jsonObject, HtmlString tooltipOrNull) {
+            super(method, element, jsonObject, tooltipOrNull);
         }
 
         @Override
@@ -47,10 +43,16 @@ public class Marker implements JSONStreamAware {
          */
         public Line withStyle(LineStyle style) {
             Objects.requireNonNull(style, "style");
-            ImmutableMap.Builder<String, Object> secondParam = ImmutableMap.builder();
-            secondParam.putAll(this.secondParam);
-            secondParam.putAll(style.options);
-            return new Line(method, firstParam, secondParam.build(), tooltipOrNull);
+
+            JsonObject secondParam = new JsonObject();
+            for (Entry<String, JsonElement> entry : this.secondParam.entrySet()) {
+                secondParam.add(entry.getKey(), entry.getValue());
+            }
+            for (Entry<String, JsonElement> entry : style.options.entrySet()) {
+                secondParam.add(entry.getKey(), entry.getValue());
+            }
+
+            return new Line(method, firstParam, secondParam, tooltipOrNull);
         }
 
     }
@@ -61,7 +63,7 @@ public class Marker implements JSONStreamAware {
      */
     public static class Polygon extends Marker {
 
-        Polygon(String method, JSONAware firstParam, ImmutableMap<String, Object> secondParam,
+        Polygon(String method, JsonElement firstParam, JsonObject secondParam,
                 HtmlString tooltipOrNull) {
             super(method, firstParam, secondParam, tooltipOrNull);
         }
@@ -84,10 +86,16 @@ public class Marker implements JSONStreamAware {
          */
         public Polygon withStyle(PolygonStyle style) {
             Objects.requireNonNull(style, "style");
-            ImmutableMap.Builder<String, Object> secondParam = ImmutableMap.builder();
-            secondParam.putAll(this.secondParam);
-            secondParam.putAll(style.options);
-            return new Polygon(method, firstParam, secondParam.build(), tooltipOrNull);
+
+            JsonObject secondParam = new JsonObject();
+            for (Entry<String, JsonElement> entry : this.secondParam.entrySet()) {
+                secondParam.add(entry.getKey(), entry.getValue());
+            }
+            for (Entry<String, JsonElement> entry : style.options.entrySet()) {
+                secondParam.add(entry.getKey(), entry.getValue());
+            }
+
+            return new Polygon(method, firstParam, secondParam, tooltipOrNull);
         }
     }
 
@@ -101,8 +109,9 @@ public class Marker implements JSONStreamAware {
      * @return The circle.
      */
     public static Polygon circle(MapLocation center, int radius) {
-        ImmutableMap<String, Object> options = ImmutableMap.of("radius", radius);
-        return new Polygon("circle", center, options, null);
+        JsonObject options = new JsonObject();
+        options.addProperty("radius", radius);
+        return new Polygon("circle", center.toJsonElement(), options, null);
     }
 
     /**
@@ -112,14 +121,15 @@ public class Marker implements JSONStreamAware {
      *            The points. Provide at least two points.
      * @return The line.
      */
-    @SuppressWarnings("unchecked")
     public static Line line(List<MapLocation> points) {
-        JSONArray array = new JSONArray();
-        array.addAll(points);
+        JsonArray array = new JsonArray();
+        for (MapLocation point : points) {
+            array.add(point.toJsonElement());
+        }
         if (array.size() < 2) {
             throw new IllegalArgumentException("Less than two points were given: " + array);
         }
-        return new Line("polyline", array, ImmutableMap.of(), null);
+        return new Line("polyline", array, new JsonObject(), null);
     }
 
     /**
@@ -141,7 +151,7 @@ public class Marker implements JSONStreamAware {
      * @return The point marker.
      */
     public static Marker point(MapLocation point) {
-        return new Marker("marker", point, ImmutableMap.of(), null);
+        return new Marker("marker", point.toJsonElement(), new JsonObject(), null);
     }
 
     /**
@@ -154,11 +164,12 @@ public class Marker implements JSONStreamAware {
      *            The points.
      * @return The polygon.
      */
-    @SuppressWarnings("unchecked")
     public static Polygon polygon(List<MapLocation> points) {
-        JSONArray array = new JSONArray();
-        array.addAll(points);
-        return new Polygon("polygon", array, ImmutableMap.of(), null);
+        JsonArray array = new JsonArray();
+        for (MapLocation point : points) {
+            array.add(point.toJsonElement());
+        }
+        return new Polygon("polygon", array, new JsonObject(), null);
     }
 
     /**
@@ -206,14 +217,14 @@ public class Marker implements JSONStreamAware {
     /**
      * May not be mutated to keep this class thread-safe and safe for storage.
      */
-    protected final JSONAware firstParam;
+    protected final JsonElement firstParam;
     /**
      * May not be mutated to keep this class thread-safe and safe for storage.
      */
-    protected final ImmutableMap<String, Object> secondParam;
+    protected final JsonObject secondParam;
     protected final HtmlString tooltipOrNull;
 
-    Marker(String method, JSONAware firstParam, ImmutableMap<String, Object> secondParam, HtmlString tooltipOrNull) {
+    Marker(String method, JsonElement firstParam, JsonObject secondParam, HtmlString tooltipOrNull) {
         this.method = Objects.requireNonNull(method, "method");
         this.firstParam = Objects.requireNonNull(firstParam, "firstParam");
         this.secondParam = Objects.requireNonNull(secondParam, "secondParam");
@@ -259,6 +270,21 @@ public class Marker implements JSONStreamAware {
     }
 
     /**
+     * {@inheritDoc} This method is thread-safe.
+     */
+    @Override
+    public JsonElement toJsonElement() {
+        JsonObject object = new JsonObject();
+        object.addProperty("method", method);
+        object.add("firstParam", firstParam);
+        object.add("secondParam", secondParam);
+        if (this.tooltipOrNull != null) {
+            object.addProperty("tooltip", tooltipOrNull.toString());
+        }
+        return object;
+    }
+
+    /**
      * Creates a new marker with the given tooltip. Can be called from any
      * thread.
      *
@@ -269,22 +295,6 @@ public class Marker implements JSONStreamAware {
     public Marker tooltip(HtmlString tooltip) {
         Objects.requireNonNull(tooltip, "tooltip");
         return new Marker(this.method, this.firstParam, this.secondParam, tooltip);
-    }
-
-    /**
-     * {@inheritDoc} This method is thread-safe.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public void writeJSONString(Writer out) throws IOException {
-        JSONObject object = new JSONObject();
-        object.put("method", method);
-        object.put("firstParam", firstParam);
-        object.put("secondParam", secondParam);
-        if (this.tooltipOrNull != null) {
-            object.put("tooltip", tooltipOrNull.toString());
-        }
-        object.writeJSONString(out);
     }
 
 }

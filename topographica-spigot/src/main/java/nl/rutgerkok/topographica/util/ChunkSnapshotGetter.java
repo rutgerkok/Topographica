@@ -27,8 +27,8 @@ public class ChunkSnapshotGetter {
         public final boolean alreadyLoaded;
 
         /**
-         * The amount of players online, which can be used to decide how fast the next
-         * chunk is going to be loaded.
+         * The amount of players online, which can be used to decide how fast
+         * the next chunk is going to be loaded.
          */
         public final int playersOnline;
 
@@ -48,7 +48,7 @@ public class ChunkSnapshotGetter {
 
     /**
      * Gets the chunk data. Method must be called on an asynchronous thread.
-     * 
+     *
      * @param world
      *            The world.
      * @param chunkX
@@ -61,20 +61,20 @@ public class ChunkSnapshotGetter {
         Callable<ChunkResult> callable = () -> {
             int playersOnline = plugin.getServer().getOnlinePlayers().size();
 
-        // We need to get chunks on the server threads
-        boolean alreadyLoaded = world.isChunkLoaded(chunkX, chunkZ);
+            // We need to get chunks on the server threads
+            boolean alreadyLoaded = world.isChunkLoaded(chunkX, chunkZ);
 
-        if (world.loadChunk(chunkX, chunkZ, false)) {
-            Chunk chunk = world.getChunkAt(chunkX, chunkZ);
-            ChunkSnapshot snapshot = chunk.getChunkSnapshot(true, false, false);
-            if (!alreadyLoaded) {
-                world.unloadChunkRequest(chunkX, chunkZ);
+            if (world.loadChunk(chunkX, chunkZ, false)) {
+                Chunk chunk = world.getChunkAt(chunkX, chunkZ);
+                ChunkSnapshot snapshot = chunk.getChunkSnapshot(true, false, false);
+                if (!alreadyLoaded) {
+                    world.unloadChunkRequest(chunkX, chunkZ);
+                }
+                return new ChunkResult(Optional.of(snapshot), playersOnline, alreadyLoaded);
             }
-            return new ChunkResult(Optional.of(snapshot), playersOnline, alreadyLoaded);
-        }
-        return new ChunkResult(Optional.empty(), playersOnline, false);
+            return new ChunkResult(Optional.empty(), playersOnline, false);
         };
-        
+
         return plugin.getServer().getScheduler().callSyncMethod(plugin, callable);
     }
 }

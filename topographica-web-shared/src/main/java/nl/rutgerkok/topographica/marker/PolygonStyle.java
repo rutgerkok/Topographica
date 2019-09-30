@@ -1,9 +1,9 @@
 package nl.rutgerkok.topographica.marker;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
+
+import com.google.gson.JsonObject;
 
 /**
  * Style of a polygon. Note that this class is not thread-safe: you should keep
@@ -41,7 +41,7 @@ public final class PolygonStyle {
         return new PolygonStyle();
     }
 
-    final Map<String, Object> options = new HashMap<>();
+    final JsonObject options = new JsonObject();
 
     private PolygonStyle() {
 
@@ -57,7 +57,7 @@ public final class PolygonStyle {
      * @return This, for chaining.
      */
     public PolygonStyle fill(boolean fill) {
-        options.put("fill", fill);
+        options.addProperty("fill", fill);
         return this;
     }
 
@@ -72,8 +72,8 @@ public final class PolygonStyle {
      */
     public PolygonStyle fillColor(Color color) {
         fill(color.getAlpha() > 0);
-        options.put("fillColor", HtmlColor.getHexString(color));
-        options.put("fillOpacity", color.getAlpha() / 256.0);
+        options.addProperty("fillColor", HtmlColor.getHexString(color));
+        options.addProperty("fillOpacity", color.getAlpha() / 256.0);
         return this;
     }
 
@@ -87,7 +87,7 @@ public final class PolygonStyle {
      */
     public PolygonStyle fillRule(FillRule method) {
         fill(true);
-        options.put("fillRule", method.toString().toLowerCase(Locale.ROOT).replace("_", ""));
+        options.addProperty("fillRule", method.toString().toLowerCase(Locale.ROOT).replace("_", ""));
         return this;
     }
 
@@ -102,7 +102,7 @@ public final class PolygonStyle {
      * @return This, for chaining.
      */
     public PolygonStyle stroke(boolean stroke) {
-        options.put("stroke", stroke);
+        options.addProperty("stroke", stroke);
         return this;
     }
 
@@ -115,8 +115,8 @@ public final class PolygonStyle {
      */
     public PolygonStyle strokeColor(Color color) {
         stroke(color.getAlpha() > 0);
-        options.put("color", HtmlColor.getHexString(color));
-        options.put("opacity", color.getAlpha() / 256.0);
+        options.addProperty("color", HtmlColor.getHexString(color));
+        options.addProperty("opacity", color.getAlpha() / 256.0);
         return this;
     }
 
@@ -132,7 +132,7 @@ public final class PolygonStyle {
             throw new IllegalArgumentException("Negative stroke width: " + pixels);
         }
         stroke(pixels > 0);
-        options.put("weight", pixels);
+        options.addProperty("weight", pixels);
         return this;
     }
 }

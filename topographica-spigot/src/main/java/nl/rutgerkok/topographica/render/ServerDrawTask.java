@@ -28,7 +28,6 @@ import nl.rutgerkok.topographica.util.Coordinate;
  */
 public class ServerDrawTask implements Runnable {
 
-
     private static class RenderingDrawContext implements DrawContext {
 
         private volatile boolean mustStop = false;

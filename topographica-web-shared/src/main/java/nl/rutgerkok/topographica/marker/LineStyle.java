@@ -1,9 +1,9 @@
 package nl.rutgerkok.topographica.marker;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
+
+import com.google.gson.JsonObject;
 
 public class LineStyle {
     /**
@@ -50,7 +50,7 @@ public class LineStyle {
         return new LineStyle();
     }
 
-    final Map<String, Object> options = new HashMap<>();
+    final JsonObject options = new JsonObject();
 
     private LineStyle() {
 
@@ -65,8 +65,8 @@ public class LineStyle {
      * @return This, for chaining.
      */
     public LineStyle color(Color color) {
-        options.put("color", HtmlColor.getHexString(color));
-        options.put("opacity", color.getAlpha() / 256.0);
+        options.addProperty("color", HtmlColor.getHexString(color));
+        options.addProperty("opacity", color.getAlpha() / 256.0);
         return this;
     }
 
@@ -79,7 +79,7 @@ public class LineStyle {
      * @return This, for chaining.
      */
     public LineStyle lineCap(LineCap lineCap) {
-        options.put("lineCap", lineCap.name().toLowerCase(Locale.ROOT));
+        options.addProperty("lineCap", lineCap.name().toLowerCase(Locale.ROOT));
         return this;
     }
 
@@ -92,7 +92,7 @@ public class LineStyle {
      * @return This, for chaining.
      */
     public LineStyle lineJoin(LineJoin lineJoin) {
-        options.put("lineJoin", lineJoin.name().toLowerCase(Locale.ROOT).replace('_', '-'));
+        options.addProperty("lineJoin", lineJoin.name().toLowerCase(Locale.ROOT).replace('_', '-'));
         return this;
     }
 
@@ -109,7 +109,7 @@ public class LineStyle {
         if (width <= 0) {
             throw new IllegalArgumentException("width must be positive, was " + width);
         }
-        options.put("weight", width);
+        options.addProperty("weight", width);
         return this;
     }
 }

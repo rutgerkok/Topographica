@@ -1,11 +1,12 @@
 package nl.rutgerkok.topographica.marker;
 
-import org.json.simple.JSONAware;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 
 /**
  * A location on the map. Does not store the world. Immutable value.
  */
-public final class MapLocation implements JSONAware {
+public final class MapLocation implements JsonAware {
 
     /**
      * Creates a map point using the given coords.
@@ -82,9 +83,12 @@ public final class MapLocation implements JSONAware {
     }
 
     @Override
-    public String toJSONString() {
+    public JsonElement toJsonElement() {
         // Yeah, that's how the map represents coords
-        return "[" + -z + ", " + x + "]";
+        JsonArray array = new JsonArray();
+        array.add(-z);
+        array.add(x);
+        return array;
     }
 
     @Override

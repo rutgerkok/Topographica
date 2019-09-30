@@ -20,8 +20,8 @@ import org.bukkit.Color;
 public final class Canvas {
 
     /**
-     * Creates a drawing canvas from a region from an existing file. Returns a new
-     * canvas if the file is not readable.
+     * Creates a drawing canvas from a region from an existing file. Returns a
+     * new canvas if the file is not readable.
      *
      * @param imageFile
      *            The image file.

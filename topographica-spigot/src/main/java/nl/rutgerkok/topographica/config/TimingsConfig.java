@@ -30,9 +30,9 @@ public final class TimingsConfig {
     }
 
     /**
-     * Gets how many seconds the renderer should wait after it had to load a chunk
-     * from disk.
-     * 
+     * Gets how many seconds the renderer should wait after it had to load a
+     * chunk from disk.
+     *
      * @param playersOnline
      *            The number of players online in the server.
      *

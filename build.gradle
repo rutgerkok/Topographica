@@ -14,8 +14,8 @@ buildscript {
         jcenter() // For Shadow
     }
     dependencies {
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.23.0"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.24.3"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
     }
 }
 
@@ -62,12 +62,12 @@ subprojects {
 
 // Web server (library, used by plugin and by standalone web server)
 project(':topographica-web-shared') {
+    apply plugin: "java-library"
+
     dependencies {
-        compileOnly 'com.google.guava:guava:18.0'
-        testCompile 'com.google.guava:guava:18.0'
-        compileOnly 'io.netty:netty-all:4.1.19.Final'
-        compileOnly 'com.googlecode.json-simple:json-simple:1.1.1'
-        testCompile 'com.googlecode.json-simple:json-simple:1.1.1'
+        api 'com.google.guava:guava:21.0'
+        api 'com.google.code.gson:gson:2.8.0'
+        implementation 'io.netty:netty-all:4.1.19.Final'
     }
 }
 
@@ -76,10 +76,9 @@ project(':topographica-web-standalone') {
     apply plugin: 'com.github.johnrengelman.shadow'
 
     dependencies { // Must be included in JAR file
-        compile 'com.google.guava:guava:18.0'
-        compile 'io.netty:netty-all:4.1.19.Final'
-        compile 'com.googlecode.json-simple:json-simple:1.1.1'
-        compile project(':topographica-web-shared')
+        implementation 'com.google.guava:guava:21.0'
+        implementation 'io.netty:netty-all:4.1.19.Final'
+        implementation project(':topographica-web-shared')
     }
 
     shadowJar {
@@ -100,9 +99,9 @@ project(':topographica-spigot') {
 
     dependencies {
         compileOnly 'org.spigotmc:spigot-api:1.13-pre7-R0.1-SNAPSHOT'
-        testCompile 'org.spigotmc:spigot-api:1.13-pre7-R0.1-SNAPSHOT'
-        testCompile 'com.google.guava:guava:18.0'
-        compile project(':topographica-web-shared')
+        testImplementation 'org.spigotmc:spigot-api:1.13-pre7-R0.1-SNAPSHOT'
+        testImplementation 'com.google.guava:guava:21.0'
+        implementation project(':topographica-web-shared')
     }
 
     processResources { // config.yml and plugin.yml replacements
@@ -116,8 +115,8 @@ project(':topographica-spigot') {
     shadowJar {
         dependencies {
             exclude(dependency('com.google.guava:guava'))
+            exclude(dependency('com.google.code.gson:gson'))
             exclude(dependency('io.netty:netty-all'))
-            exclude(dependency('com.googlecode.json-simple:json-simple'))
         }
         destinationDir = file("$rootDir")
         archiveName = "Topographica.${extension}"

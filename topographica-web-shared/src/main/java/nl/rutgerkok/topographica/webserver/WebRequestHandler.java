@@ -10,11 +10,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -22,7 +19,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -33,8 +34,6 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-
-import org.json.simple.JSONArray;
 
 import nl.rutgerkok.topographica.marker.Marker;
 
@@ -89,13 +88,15 @@ final class WebRequestHandler {
                 writer.write(line.substring(0, matcher.start()));
                 writer.write("[");
                 boolean first = true;
+                Gson gson = new Gson();
+                JsonWriter jsonWriter = gson.newJsonWriter(writer);
                 for (Marker marker : currentWorld.getMarkers()) {
                     if (first) {
                         first = false;
                     } else {
                         writer.write(",");
                     }
-                    marker.writeJSONString(writer);
+                    gson.toJson(marker.toJsonElement(), jsonWriter);
                 }
                 writer.write("]");
                 writer.write(line.substring(matcher.end()));
@@ -144,11 +145,12 @@ final class WebRequestHandler {
                 .orElseGet(() -> this.serverInfo.getWorlds().iterator().next());
     }
 
-    private FullHttpResponse jsonResponse(List<?> output) throws IOException {
+    private FullHttpResponse jsonResponse(JsonArray output) throws IOException {
         ByteBuf buffer = Unpooled.buffer();
 
         try (Writer writer = new OutputStreamWriter(new ByteBufOutputStream(buffer), StandardCharsets.UTF_8)) {
-            JSONArray.writeJSONString(output, writer);
+            Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+            gson.toJson(output, gson.newJsonWriter(writer));
         }
 
         FullHttpResponse response = new DefaultFullHttpResponse(
@@ -260,12 +262,14 @@ final class WebRequestHandler {
 
     private FullHttpResponse sendPlayerList(WebWorld world) throws IOException {
         Collection<? extends WebPlayer> players = this.serverInfo.getPlayers(world);
-        List<Map<?, ?>> output = new ArrayList<>();
+        JsonArray output = new JsonArray();
         for (WebPlayer player : players) {
             long position = player.getPosition();
-            output.add(ImmutableMap.of("name", player.getDisplayName(),
-                    "x", IntPair.getX(position),
-                    "z", IntPair.getZ(position)));
+            JsonObject entry = new JsonObject();
+            entry.addProperty("name", player.getDisplayName());
+            entry.addProperty("x", IntPair.getX(position));
+            entry.addProperty("z", IntPair.getZ(position));
+            output.add(entry);
         }
         return jsonResponse(output);
     }

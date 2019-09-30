@@ -55,7 +55,7 @@ public class ServerTaskList {
 
     /**
      * Puts the chunk in the queue for rendering.
-     * 
+     *
      * @param chunk
      *            The chunk.
      */
