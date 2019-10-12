@@ -2,6 +2,8 @@
 
 Live map for Minecraft Spigot servers. View an example map at [mc.marijnk.nl](http://mc.marijnk.nl).
 
+![Example map](./misc/screenshot.jpg)
+
 * Google-maps like map for your Minecraft server
 * Built-in web server
 * Lightweight; requires almost no RAM for rendering
