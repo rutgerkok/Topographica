@@ -1,7 +1,8 @@
 package nl.rutgerkok.topographica.config;
 
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,7 +10,6 @@ import java.util.Set;
 
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import org.bukkit.Server;
@@ -78,7 +78,7 @@ public final class Config {
     }
 
     private Map<String, WorldConfig> getWorldConfigs(Server server, FileConfiguration config, StartupLog log) {
-        Map<String, WorldConfig> configsByWorld = new HashMap<>();
+        Map<String, WorldConfig> configsByWorld = new LinkedHashMap<>();
 
         // Put some default values
         World defaultWorld = server.getWorlds().get(0);
@@ -113,7 +113,7 @@ public final class Config {
                     new WorldConfig(world, worldName, worldSection, log));
         }
 
-        return ImmutableMap.copyOf(configsByWorld);
+        return Collections.unmodifiableMap(configsByWorld);
     }
 
     private void pruneDefaults(ConfigurationSection defaults, ConfigurationSection actual) {

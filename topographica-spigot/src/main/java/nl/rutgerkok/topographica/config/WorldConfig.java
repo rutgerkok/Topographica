@@ -15,6 +15,7 @@ public final class WorldConfig {
     private final RenderAreaConfig renderAreaConfig;
     private final ColorConfig colorConfig;
     private final String displayName;
+    private final int order;
 
     WorldConfig(World copyDefaultsOrNull, String worldName, ConfigurationSection config, StartupLog log) {
         displayName = config.getString("display-name", worldName);
@@ -30,6 +31,7 @@ public final class WorldConfig {
                 config.getInt("center-z", spawn.getBlockZ()),
                 radius);
         colorConfig = new ColorConfig(config.getConfigurationSection("colors"), log);
+        order = config.getInt("order", copyDefaultsOrNull == null ? 0 : copyDefaultsOrNull.getEnvironment().ordinal());
     }
 
     /**
@@ -48,6 +50,16 @@ public final class WorldConfig {
      */
     public String getDisplayName() {
         return displayName;
+    }
+
+    /**
+     * Gets the order in which the worlds appear, lower is earlier.
+     *
+     * @return The oder.
+     *
+     */
+    public int getOrder() {
+        return order;
     }
 
     /**
@@ -72,6 +84,7 @@ public final class WorldConfig {
         if (!displayName.equals(DEFAULT_WORLD)) {
             section.set("display-name", displayName);
         }
+        section.set("order", order);
         this.renderAreaConfig.write(section);
         colorConfig.write(section.createSection("colors"));
     }

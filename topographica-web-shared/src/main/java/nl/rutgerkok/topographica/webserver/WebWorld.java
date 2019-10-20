@@ -30,6 +30,14 @@ public interface WebWorld {
     MarkerCollection getMarkers();
 
     /**
+     * Gets the order of the world. Worlds with a lower order are displayed
+     * before worlds with a higher order.
+     *
+     * @return The order.
+     */
+    int getOrder();
+
+    /**
      * Gets the block origin of the world, for example [0, 64, 0].
      *
      * @return The block origin, [x, y, z].

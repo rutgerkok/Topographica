@@ -20,9 +20,11 @@ final class LastKnownServerInfo extends ServerInfo {
     private static class CachedWorld implements WebWorld {
         private final String name;
         private final MarkerCollection markers = new MarkerCollection();
+        private final int order;
 
-        CachedWorld(String name) {
+        CachedWorld(String name, int order) {
             this.name = Objects.requireNonNull(name, "name");
+            this.order = order;
         }
 
         @Override
@@ -39,6 +41,11 @@ final class LastKnownServerInfo extends ServerInfo {
         @Override
         public MarkerCollection getMarkers() {
             return markers;
+        }
+
+        @Override
+        public int getOrder() {
+            return order;
         }
 
         @Override
@@ -60,9 +67,11 @@ final class LastKnownServerInfo extends ServerInfo {
         // Find worlds using directories
         ImmutableList.Builder<CachedWorld> worlds = ImmutableList.builder();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(imagesFolder)) {
+            int order = 0;
             for (Path path : stream) {
                 if (Files.isDirectory(path)) {
-                    worlds.add(new CachedWorld(path.getFileName().toString()));
+                    worlds.add(new CachedWorld(path.getFileName().toString(), order));
+                    order++;
                 }
             }
         } catch (IOException e) {
