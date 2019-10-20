@@ -3,6 +3,8 @@ package nl.rutgerkok.topographica.render;
 import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_HEIGHT_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_SIZE_BLOCKS;
 import static nl.rutgerkok.topographica.util.SizeConstants.CHUNK_SIZE_BLOCKS_BITS;
+import static nl.rutgerkok.topographica.util.SizeConstants.NETHER_HIGHEST_BLOCK_Y;
+import static nl.rutgerkok.topographica.util.SizeConstants.NETHER_START_BLOCK_Y;
 import static nl.rutgerkok.topographica.util.SizeConstants.PIXEL_SIZE_BLOCKS;
 
 import java.util.Objects;
@@ -61,30 +63,69 @@ class ChunkRenderer {
         return color;
     }
 
-    private int getHighestY(ChunkSnapshot chunk, int x, int z) {
-        int y = chunk.getHighestBlockYAt(x, z);
-        if (y >= CHUNK_HEIGHT_BLOCKS) {
-            return CHUNK_HEIGHT_BLOCKS - 1;
-        }
-        if (y <= 0) {
-            return 0;
-        }
-        Material material = chunk.getBlockType(x, y, z);
-        if (material == Material.AIR) {
-            // Air, try one block lower
-            y--;
-        }
-
-        // Move down if we found a liquid block
+    private int drillThroughStoneAndAir(ChunkSnapshot chunk, int x, int z) {
+        // If you have a world with bedrock at y=NETHER_HIGHEST_BLOCK_Y, this
+        // method will drill through the stone and the air to find the
+        // actually-highest
+        // block
+        int y = NETHER_START_BLOCK_Y;
         while (y > 0) {
             y--;
-            material = chunk.getBlockType(x, y, z);
-            if (!isLiquid(material)) {
-                return y + 1;
+            if (!chunk.getBlockType(x, y, z).isAir()) {
+                continue;
+            }
+
+            // We found air, continue searching down until the next non-air
+            // block
+            while (y > 0) {
+                y--;
+
+                if (!chunk.getBlockType(x, y, z).isAir()) {
+                    // Found non-air, drilled down far enough
+                    return y;
+                }
+            }
+        }
+        return 0;
+    }
+
+    private int getHighestY(ChunkSnapshot chunk, int x, int z) {
+        int y;
+        if (chunk.getBlockType(x, NETHER_HIGHEST_BLOCK_Y, z) == Material.BEDROCK) {
+            // We're in the Nether (or a custom world that looks like the
+            // nether), drill down through the stone
+            y = drillThroughStoneAndAir(chunk, x, z);
+        } else {
+            y = chunk.getHighestBlockYAt(x, z);
+
+            if (y >= CHUNK_HEIGHT_BLOCKS) {
+                return CHUNK_HEIGHT_BLOCKS - 1;
+            }
+            if (y <= 0) {
+                return 0;
+            }
+            Material material = chunk.getBlockType(x, y, z);
+            if (material.isAir()) {
+                // Air, try one block lower
+                y--;
             }
         }
 
-        return 0;
+        // Move down if we found a liquid block
+        if (isLiquid(chunk.getBlockType(x, y, z))) {
+            while (y > 0) {
+                y--;
+                Material material = chunk.getBlockType(x, y, z); // Check
+                                                                 // material
+                                                                 // below
+                if (!isLiquid(material)) {
+                    return y + 1;
+                }
+            }
+            return 0;
+        }
+
+        return y;
     }
 
     protected boolean isLiquid(Material material) {
