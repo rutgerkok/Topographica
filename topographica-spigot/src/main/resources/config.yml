@@ -35,6 +35,9 @@
 #   worlds that do not have their own settings. The most important setting is
 #   the radius. The radius is set in blocks, and controls how much of the world
 #   is rendered around the center. A radius of 0 disables the map for that world.
+#   The "order" setting controls the order of the worlds in the web browser menu.
+#   Lower is earlier. If two worlds have the same order, the order in which they
+#   appear is arbitrary.
 #
 # ACTUAL SETTINGS BELOW
 timings:
@@ -69,6 +72,7 @@ worlds:
       DARK_OAK_STAIRS: '#382513'
       DIORITE: '#c9c9c9'
       DIRT: '#976d4d'
+      END_STONE: '#d6d99c'
       FROSTED_ICE: '#a0a0ff'
       GRANITE: '#946553'
       GRASS: '#7fb238'
@@ -81,6 +85,7 @@ worlds:
       NETHERRACK: '#4b1717'
       LAVA: '#ffa500'
       NETHER_BRICKS: '#0d0305'
+      OBSIDIAN: '#0d0818'
       OAK_LEAVES: '#007c00'
       OAK_PLANKS: '#856f4a'
       OAK_SLAB: '#856f4a'
@@ -89,6 +94,7 @@ worlds:
       PACKED_ICE: '#a0a0ff'
       POLISHED_DIORITE: '#d3d3d3'
       POLISHED_GRANITE: '#946553'
+      PURPUR_BLOCK: '#a67aa5'
       QUARTZ_BLOCK: '#e7e3dd'
       QUARTZ_PILLAR: '#e7e3dd'
       RED_SAND: '#ff5733'
