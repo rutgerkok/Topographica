@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import org.bukkit.Server;
@@ -28,6 +29,12 @@ public final class Config {
             return world.getName().toLowerCase(Locale.ROOT);
         }
     };
+
+    /**
+     * These two are not pruned - their default values are set by the world, so
+     * pruning them if global removes them is not good.
+     */
+    private static final Set<String> NOT_PRUNABLE = ImmutableSet.of("center-x", "center-z");
 
     private final Map<String, WorldConfig> configsByWorld;
     private final WebConfig webConfig;
@@ -118,6 +125,11 @@ public final class Config {
 
     private void pruneDefaults(ConfigurationSection defaults, ConfigurationSection actual) {
         for (Entry<String, Object> entry : actual.getValues(true).entrySet()) {
+            String[] splitKey = entry.getKey().split("\\.");
+            if (NOT_PRUNABLE.contains(splitKey[splitKey.length - 1])) {
+                continue;
+            }
+
             if (entry.getValue().equals(defaults.get(entry.getKey()))) {
                 actual.set(entry.getKey(), null);
             }
