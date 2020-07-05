@@ -48,8 +48,8 @@ subprojects {
 
     processResources { // Web, config.yml and plugin.yml replacements
         filter ReplaceTokens, tokens: [
-        	"PROJECT_NAME": "Topographica",
-        	"PROJECT_SLUG": "topographica",
+            "PROJECT_NAME": "Topographica",
+            "PROJECT_SLUG": "topographica",
             "VERSION": version,
             "DATE": new Date().format('yyyy-MM-dd')
         ]
@@ -66,12 +66,19 @@ subprojects {
             }
         }
         repositories {
-	        maven {
-	            def releasesRepoUrl = "https://repo.codemc.io/repository/maven-releases/"
-	            def snapshotsRepoUrl = "https://repo.codemc.io/repository/maven-snapshots/"
-	            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-	        }
-	    }
+            if (project.hasProperty('mavenUsername') && project.hasProperty('mavenPassword')) {
+                maven {
+                    credentials {
+                        username project.mavenUsername
+                        password project.mavenPassword
+                    }
+
+                    def releasesRepoUrl = "https://repo.codemc.io/repository/maven-releases/"
+                    def snapshotsRepoUrl = "https://repo.codemc.io/repository/maven-snapshots/"
+                    url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                }
+            }
+        }
     }
 }
 
