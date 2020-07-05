@@ -82,7 +82,7 @@ project(':topographica-web-standalone') {
     }
 
     shadowJar {
-        destinationDir = file("$rootDir")
+        destinationDir = file("$rootDir/build/libs")
         archiveName = "Topographica-Webserver.${extension}"
 
         manifest {
@@ -118,7 +118,7 @@ project(':topographica-spigot') {
             exclude(dependency('com.google.code.gson:gson'))
             exclude(dependency('io.netty:netty-all'))
         }
-        destinationDir = file("$rootDir")
+        destinationDir = file("$rootDir/build/libs")
         archiveName = "Topographica.${extension}"
     }
 
