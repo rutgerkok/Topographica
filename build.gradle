@@ -30,6 +30,7 @@ subprojects {
 
     apply plugin: "java"
     apply plugin: "com.diffplug.gradle.spotless"
+    apply plugin: "maven-publish"
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
@@ -57,7 +58,21 @@ subprojects {
     dependencies {
         testCompile 'junit:junit:4.12'
     }
-
+    
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+        }
+        repositories {
+	        maven {
+	            def releasesRepoUrl = "https://repo.codemc.io/repository/maven-releases/"
+	            def snapshotsRepoUrl = "https://repo.codemc.io/repository/maven-snapshots/"
+	            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+	        }
+	    }
+    }
 }
 
 // Web server (library, used by plugin and by standalone web server)
