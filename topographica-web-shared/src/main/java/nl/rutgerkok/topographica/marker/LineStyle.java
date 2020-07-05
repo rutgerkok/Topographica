@@ -66,7 +66,9 @@ public class LineStyle {
      */
     public LineStyle color(Color color) {
         options.addProperty("color", HtmlColor.getHexString(color));
-        options.addProperty("opacity", color.getAlpha() / 256.0);
+        if (color.getAlpha() < 255) {
+            options.addProperty("opacity", color.getAlpha() / 255.0);
+        }
         return this;
     }
 
