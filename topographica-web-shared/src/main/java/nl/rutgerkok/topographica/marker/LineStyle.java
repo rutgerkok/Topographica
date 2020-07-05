@@ -73,6 +73,41 @@ public class LineStyle {
     }
 
     /**
+     * Sets the used dash pattern.
+     *
+     * @param dashWidth
+     *            Width of the dashes in pixels.
+     * @return This, for chaining.
+     * @throws IllegalArgumentException
+     *             If dashWidth is 0 or negative.
+     */
+    public LineStyle dashed(int dashWidth) {
+        return dashed(dashWidth, dashWidth);
+    }
+
+    /**
+     * Sets the used dash pattern.
+     *
+     * @param dashWidth
+     *            Width of the dashes in pixels.
+     * @param gapWidth
+     *            Width of the gaps in between the dashes in pixels.
+     * @return This, for chaining.
+     * @throws IllegalArgumentException
+     *             If dashWidth is 0 or negative.
+     */
+    public LineStyle dashed(int dashWidth, int gapWidth) {
+        if (dashWidth <= 0) {
+            throw new IllegalArgumentException("Dash width must be positive, was " + dashWidth);
+        }
+        if (gapWidth <= 0) {
+            throw new IllegalArgumentException("Gap width must be positive, was " + gapWidth);
+        }
+        options.addProperty("dashArray", dashWidth + ", " + gapWidth);
+        return this;
+    }
+
+    /**
      * Sets the style used at the end of the line. {@link LineCap#ROUND} is the
      * default.
      *
