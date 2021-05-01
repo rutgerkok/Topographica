@@ -1,6 +1,8 @@
 # Topographica
 
-Live map for Minecraft Spigot servers. View an example map at [mc.marijnk.nl](http://mc.marijnk.nl).
+**No longer updated. I would recommend using the new plugin [Pl3xMap](https://github.com/pl3xgaming/Pl3xMap) instead, which has all features of Topographica, has many additional features, and is much faster because it uses Paper's async chunk loading API.**
+
+Live map for Minecraft Spigot servers.
 
 ![Example map](./misc/screenshot.jpg)
 
